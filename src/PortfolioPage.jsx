@@ -70,6 +70,21 @@ function FadeInSection({ id, title, content }) {
   );
 }
 
+// detect mobile viewport
+function useIsMobile(breakpoint = 800) {
+  const [isMobile, setIsMobile] = useState(
+    typeof window !== 'undefined' ? window.innerWidth <= breakpoint : false
+  );
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= breakpoint);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [breakpoint]);
+
+  return isMobile;
+}
+
 const sections = [
   {
     id: 'summary',
@@ -699,6 +714,8 @@ const sections = [
 ];
 
 export default function PortfolioPage() {
+  const isMobile = useIsMobile(800);
+
   return (
     <div
       style={{
@@ -709,9 +726,11 @@ export default function PortfolioPage() {
         padding: 20,
       }}
     >
-      <section style={{ maxWidth: 1200, margin: '0 auto 20px auto' }}>
-        <RunnerGame />
-      </section>
+      {!isMobile && (
+        <section style={{ maxWidth: 1200, margin: '0 auto 20px auto' }}>
+          <RunnerGame />
+        </section>
+      )}
 
       <section
         style={{
