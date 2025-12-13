@@ -8,18 +8,19 @@ const ORB_SIZE = 48;
 const portfolioInfo = {
   college: 'Bachelor of Technology in Computer Science Engineering\nGraduated July 2023',
   projects: 'Smallboy | GitHub, Live Demo\nSecurity Playground | GitHub, Live Demo',
-  skills: 'Expert in Google Cloud, Terraform, Jenkins, Kubernetes, Docker, Ansible, ArgoCD, Helm, and more.',
+  skills:
+    'Cloud-native DevOps with Kubernetes, Docker, Terraform, CI/CD, and observability using Elasticsearch, Kibana, and Fluent Bit.',
   certificates: 'Google Cloud Associate Cloud Engineer & IEEE Appreciation.',
 };
 
 // Custom titles for info windows (for skills orb)
 const infoTitles = {
-  skills: 'Cloud Support Engineer - DevOps at Zscaler',
+  skills: 'Cloud & Observability Engineer',
 };
 
 // Links used in info windows
 const links = {
-  github: 'https://github.com/Jaisharma2512/Smallboy', // (Can keep for GitHub main)
+  github: 'https://github.com/Jaisharma2512/Smallboy',
   linkedin: 'https://www.linkedin.com/in/jaisharma2512/',
   freelancer: 'https://www.fiverr.com/sellers/jaisharma2512/edit',
   smallboyProject: 'https://github.com/Jaisharma2512/Smallboy/tree/k8s-resources',
@@ -31,21 +32,13 @@ const links = {
 };
 
 // Orbs per phase
-const phaseOneOrbs = [
-  { x: 600, key: 'college' },
-];
+const phaseOneOrbs = [{ x: 600, key: 'college' }];
 
-const phaseTwoOrbs = [
-  { x: 400, key: 'projects' },  // 'about' orb removed as per earlier requests
-];
+const phaseTwoOrbs = [{ x: 400, key: 'projects' }];
 
-const phaseThreeOrbs = [
-  { x: 600, key: 'skills' },
-];
+const phaseThreeOrbs = [{ x: 600, key: 'skills' }];
 
-const phaseFourOrbs = [
-  { x: 600, key: 'certificates' },
-];
+const phaseFourOrbs = [{ x: 600, key: 'certificates' }];
 
 function getCanvasSize() {
   const isMobile = window.innerWidth <= 800;
@@ -53,8 +46,8 @@ function getCanvasSize() {
   const minWidth = 320;
   const width = Math.max(Math.min(window.innerWidth * 0.97, maxWidth), minWidth);
   const height = isMobile
-    ? Math.max(window.innerHeight * 0.46, width * 9 / 16, 230)
-    : Math.max(width * 9 / 16, 400);
+    ? Math.max(window.innerHeight * 0.46, (width * 9) / 16, 230)
+    : Math.max((width * 9) / 16, 400);
   return { width, height };
 }
 
@@ -130,7 +123,7 @@ function RunnerGame() {
   }, [gameStarted, gamePhase]);
 
   useEffect(() => {
-    const handleKeyDown = (e) => {
+    const handleKeyDown = e => {
       if (!gameStarted && (e.key === 'f' || e.key === 'F')) {
         setGameStarted(true);
       } else if (gameStarted && !paused && e.code === 'ArrowUp' && !isJumping.current) {
@@ -141,7 +134,7 @@ function RunnerGame() {
           jumpAudioRef.current.play();
         }
       } else if (gameStarted && (e.key === 'p' || e.key === 'P' || e.key === 'Escape')) {
-        setPaused((p) => !p);
+        setPaused(p => !p);
       }
     };
 
@@ -220,7 +213,13 @@ function RunnerGame() {
       ctx.fillStyle = 'rgba(30,60,90,0.3)';
       ctx.fillRect(0, canvasSize.height - 26, canvasSize.width, 26);
 
-      ctx.drawImage(imagesRef.current.player, playerX.current, playerY.current, PLAYER_SIZE, PLAYER_SIZE);
+      ctx.drawImage(
+        imagesRef.current.player,
+        playerX.current,
+        playerY.current,
+        PLAYER_SIZE,
+        PLAYER_SIZE
+      );
 
       let currentOrbs = [];
 
@@ -254,7 +253,7 @@ function RunnerGame() {
             playerY.current < orbY + ORB_SIZE
           ) {
             setActiveInfo(key);
-            setScore((s) => s + 1);
+            setScore(s => s + 1);
             collectedOrbsRef.current.add(key);
 
             if (gamePhase === 1 && key === 'college') {
@@ -285,7 +284,9 @@ function RunnerGame() {
     let i = 0;
     const text = portfolioInfo[activeInfo] || '';
     setInfoText('');
-    setDisplayTitle(infoTitles[activeInfo] || (activeInfo.charAt(0).toUpperCase() + activeInfo.slice(1)));
+    setDisplayTitle(
+      infoTitles[activeInfo] || activeInfo.charAt(0).toUpperCase() + activeInfo.slice(1)
+    );
 
     const intervalId = setInterval(() => {
       setInfoText(text.substring(0, i + 1));
@@ -314,7 +315,7 @@ function RunnerGame() {
       fontWeight: 700,
       fontSize: 22,
       textAlign: 'center',
-      textShadow: "0 0 8px #1119"
+      textShadow: '0 0 8px #1119',
     };
 
     const titleToShow = displayTitle;
@@ -338,40 +339,97 @@ function RunnerGame() {
           whiteSpace: 'pre-line',
         }}
       >
-        <div style={textStyle}>
-          {titleToShow}
-        </div>
-        <div style={{ color: '#e8f4ff', fontWeight: 500, fontSize: 16, textAlign: 'center', marginBottom: 18, whiteSpace: 'pre-line' }}>
+        <div style={textStyle}>{titleToShow}</div>
+        <div
+          style={{
+            color: '#e8f4ff',
+            fontWeight: 500,
+            fontSize: 16,
+            textAlign: 'center',
+            marginBottom: 18,
+            whiteSpace: 'pre-line',
+          }}
+        >
           {infoText}
         </div>
 
-        {(activeInfo === 'projects') && (
+        {activeInfo === 'projects' && (
           <div style={{ marginTop: 6, textAlign: 'left' }}>
             <div style={{ marginBottom: 5 }}>
               <strong>Smallboy:</strong>{' '}
-              <a href={links.smallboyProject} target="_blank" rel="noopener noreferrer" style={{ color: blue, textDecoration: 'underline', fontSize: 15, marginRight: 8 }}>GitHub</a>
-              <a href={links.smallboyLive} target="_blank" rel="noopener noreferrer" style={{ color: blue, textDecoration: 'underline', fontSize: 15 }}>Live Demo</a>
+              <a
+                href={links.smallboyProject}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: blue, textDecoration: 'underline', fontSize: 15, marginRight: 8 }}
+              >
+                GitHub
+              </a>
+              <a
+                href={links.smallboyLive}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: blue, textDecoration: 'underline', fontSize: 15 }}
+              >
+                Live Demo
+              </a>
             </div>
             <div>
               <strong>Security Playground:</strong>{' '}
-              <a href={links.securityPlaygroundProject} target="_blank" rel="noopener noreferrer" style={{ color: blue, textDecoration: 'underline', fontSize: 15, marginRight: 8 }}>GitHub</a>
-              <a href={links.securityPlaygroundLive} target="_blank" rel="noopener noreferrer" style={{ color: blue, textDecoration: 'underline', fontSize: 15 }}>Live Demo</a>
+              <a
+                href={links.securityPlaygroundProject}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: blue, textDecoration: 'underline', fontSize: 15, marginRight: 8 }}
+              >
+                GitHub
+              </a>
+              <a
+                href={links.securityPlaygroundLive}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: blue, textDecoration: 'underline', fontSize: 15 }}
+              >
+                Live Demo
+              </a>
             </div>
           </div>
         )}
 
-        {(activeInfo === 'skills') && (
+        {activeInfo === 'skills' && (
           <div style={{ marginTop: 6, textAlign: 'center' }}>
             <span style={{ color: blue, fontWeight: 600 }}>
-              Cloud • DevOps • Automation
+              Kubernetes • Terraform • CI/CD • Elasticsearch • Kibana • Fluent Bit
             </span>
           </div>
         )}
 
-        {(activeInfo === 'certificates') && (
-          <div style={{ marginTop: 6, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-            <a href={links.gceCert} target="_blank" rel="noopener noreferrer" style={{ color: blue, textDecoration: 'underline', fontSize: 16 }}>Google Associate Cloud Engineer Certificate</a>
-            <a href={links.ieeeCert} target="_blank" rel="noopener noreferrer" style={{ color: blue, textDecoration: 'underline', fontSize: 16 }}>IEEE Certificate of Appreciation</a>
+        {activeInfo === 'certificates' && (
+          <div
+            style={{
+              marginTop: 6,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 8,
+            }}
+          >
+            <a
+              href={links.gceCert}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: blue, textDecoration: 'underline', fontSize: 16 }}
+            >
+              Google Associate Cloud Engineer Certificate
+            </a>
+            <a
+              href={links.ieeeCert}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: blue, textDecoration: 'underline', fontSize: 16 }}
+            >
+              IEEE Certificate of Appreciation
+            </a>
           </div>
         )}
       </div>
@@ -393,24 +451,28 @@ function RunnerGame() {
           fontFamily: 'inherit',
         }}
       >
-        <span style={{
-          color: '#fff',
-          fontWeight: 'bold',
-          fontSize: 23,
-          textShadow: '0 0 9px #381',
-          marginRight: 30,
-        }}>
+        <span
+          style={{
+            color: '#fff',
+            fontWeight: 'bold',
+            fontSize: 23,
+            textShadow: '0 0 9px #381',
+            marginRight: 30,
+          }}
+        >
           Orbs collected: {score}
         </span>
-        <span style={{
-          color: '#FFA80F',
-          fontWeight: 700,
-          fontSize: 18,
-          letterSpacing: 0.5,
-          marginLeft: 0,
-          whiteSpace: 'nowrap',
-          textShadow: '0 0 8px #222'
-        }}>
+        <span
+          style={{
+            color: '#FFA80F',
+            fontWeight: 700,
+            fontSize: 18,
+            letterSpacing: 0.5,
+            marginLeft: 0,
+            whiteSpace: 'nowrap',
+            textShadow: '0 0 8px #222',
+          }}
+        >
           Press UP ARROW to jump, Press P or ESC to pause/resume
         </span>
       </div>
@@ -418,7 +480,10 @@ function RunnerGame() {
   }
 
   return (
-    <div className="runner-container" style={{ position: 'relative', width: '100%', maxWidth: 900, margin: '20px auto' }}>
+    <div
+      className="runner-container"
+      style={{ position: 'relative', width: '100%', maxWidth: 900, margin: '20px auto' }}
+    >
       {renderTopBar()}
 
       {!gameStarted && (

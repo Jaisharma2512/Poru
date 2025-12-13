@@ -74,8 +74,49 @@ const sections = [
   {
     id: 'summary',
     title: 'Summary',
-    content:
-      'Experienced DevOps Engineer with a track record of delivering efficient infrastructure automation and scalable CI/CD solutions. Skilled in cloud technologies and committed to driving innovation in secure and reliable system design.',
+    content: (
+      <div
+        style={{
+          background:
+            'linear-gradient(135deg, rgba(76,217,255,0.08), rgba(0,0,0,0.4))',
+          borderRadius: 14,
+          padding: 20,
+          boxShadow: '0 0 18px rgba(0,0,0,0.6)',
+          border: '1px solid rgba(76,217,255,0.35)',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            pointerEvents: 'none',
+            background:
+              'radial-gradient(circle at top left, rgba(76,217,255,0.35), transparent 55%)',
+            opacity: 0.8,
+          }}
+        />
+        <p
+          style={{
+            position: 'relative',
+            margin: 0,
+            fontSize: 16,
+            lineHeight: 1.7,
+            color: '#e4f4ff',
+          }}
+        >
+          <span style={{ fontWeight: 700, color: '#61dfff' }}>
+            Experienced DevOps Engineer
+          </span>{' '}
+          with a track record of delivering{' '}
+          <span style={{ fontWeight: 600 }}>efficient infrastructure automation</span> and{' '}
+          <span style={{ fontWeight: 600 }}>scalable CI/CD solutions</span>. Skilled in cloud
+          technologies and committed to driving innovation in{' '}
+          <span style={{ fontWeight: 600 }}>secure and reliable system design</span>.
+        </p>
+      </div>
+    ),
   },
   {
     id: 'work-experience',
@@ -127,7 +168,7 @@ const sections = [
             Zscaler
           </h3>
           <p style={{ margin: 0, color: '#b0cef9', fontSize: 16, lineHeight: 1.55 }}>
-            Cloud Support Engineer – DevOps
+            DevOps Engineer
             <br />
             Chandigarh, India
           </p>
@@ -140,9 +181,36 @@ const sections = [
               lineHeight: 1.8,
             }}
           >
-            <li>Led deployment of Google Cloud Platform lab environments using Kubernetes and Terraform focused on Source IP Anchoring and Browser Isolation in Zero Trust Security contexts.</li>
-            <li>Enhanced deployment reliability by integrating validation scripts, successfully reducing manual errors.</li>
-            <li>Automated provisioning workflows with Terraform and CI/CD pipelines, elevating deployment accuracy by 97%.</li>
+            <li>
+              <span style={{ fontWeight: 600, color: '#e6f5ff' }}>Led deployment</span> of Google
+              Cloud Platform lab environments using{' '}
+              <span style={{ fontWeight: 600 }}>Kubernetes and Terraform</span> focused on{' '}
+              <span style={{ fontStyle: 'italic' }}>Source IP Anchoring</span> and{' '}
+              <span style={{ fontStyle: 'italic' }}>Browser Isolation</span> in{' '}
+              <span style={{ fontWeight: 600 }}>Zero Trust Security</span> contexts.
+            </li>
+            <li>
+              Enhanced deployment reliability by integrating validation scripts, successfully
+              reducing manual errors.
+            </li>
+            <li>
+              <span
+                style={{
+                  display: 'inline-block',
+                  padding: '0 6px',
+                  marginRight: 4,
+                  borderRadius: 10,
+                  backgroundColor: 'rgba(76,217,255,0.15)',
+                  color: '#61dfff',
+                  fontWeight: 700,
+                  fontSize: 13,
+                }}
+              >
+                +97% accuracy
+              </span>
+              Automated provisioning workflows with Terraform and CI/CD pipelines, elevating
+              deployment accuracy by 97%.
+            </li>
             <li>Contributed to disaster recovery solutions using containerized architectures.</li>
             <li>Provided key support in troubleshooting and training for cloud security operations.</li>
           </ul>
@@ -196,15 +264,27 @@ const sections = [
               textShadow: '0 0 10px rgba(76, 217, 255, 0.7)',
             }}
           >
-            Graphic Era Deemed University
+            Graphic Era Deemed to be University
           </h3>
           <p style={{ fontSize: 16, lineHeight: 1.6, margin: 0 }}>
             Bachelor of Technology in Computer Science Engineering
             <br />
-            Graduated July 2023
+            <span style={{ fontWeight: 600, color: '#e4f4ff' }}>Graduated July 2023</span>
           </p>
           <p style={{ color: '#9abff2', marginTop: 10 }}>
-            Recipient of IEEE Certificate of Appreciation
+            <span
+              style={{
+                display: 'inline-block',
+                padding: '3px 10px',
+                borderRadius: 999,
+                backgroundColor: 'rgba(76,217,255,0.12)',
+                color: '#61dfff',
+                fontSize: 13,
+                fontWeight: 600,
+              }}
+            >
+              Recipient of IEEE Certificate of Appreciation
+            </span>
           </p>
         </div>
       </div>
@@ -217,8 +297,10 @@ const sections = [
       <div>
         {[
           'Google Cloud Platform',
+          'Amazon Web Services',
           'Terraform',
           'Jenkins',
+          'GitHub Actions',
           'Kubernetes',
           'Docker',
           'Ansible',
@@ -238,6 +320,9 @@ const sections = [
           'Cloud Networking',
           'Zero Trust Security',
           'GitOps',
+          'Elasticsearch',
+          'Kibana',
+          'Fluent Bit',
         ].map(skill => (
           <span
             key={skill}
@@ -252,7 +337,8 @@ const sections = [
               cursor: 'default',
               userSelect: 'none',
               boxShadow: '0 0 6px rgba(76, 217, 255, 0.3)',
-              transition: 'background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease',
+              transition:
+                'background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease',
             }}
             onMouseEnter={e => {
               e.currentTarget.style.backgroundColor = '#4cd9ff';
@@ -292,6 +378,7 @@ const sections = [
         onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#29508d')}
         onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#1f2e44')}
       >
+        {/* Security Playground */}
         <div>
           <h3
             style={{
@@ -304,21 +391,107 @@ const sections = [
           >
             Security Playground
           </h3>
-          <p>
-            <a href="https://sc.danklofan.com" target="_blank" rel="noopener noreferrer" style={linkStyle}>
-              Live Demo
-            </a>{' '}
-            |{' '}
-            <a href="https://github.com/Jaisharma2512/security-playground" target="_blank" rel="noopener noreferrer" style={linkStyle}>
-              GitHub
+
+          <p style={{ display: 'flex', gap: 12, margin: '8px 0 14px 0', flexWrap: 'wrap' }}>
+            <a
+              href="https://sc.danklofan.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                padding: '6px 14px',
+                borderRadius: 999,
+                background:
+                  'linear-gradient(135deg, rgba(76,217,255,0.25), rgba(0,123,255,0.45))',
+                color: '#0b1726',
+                fontWeight: 600,
+                fontSize: 14,
+                textDecoration: 'none',
+                boxShadow: '0 0 10px rgba(76,217,255,0.6)',
+                transform: 'translateY(0)',
+                transition:
+                  'background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease',
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow =
+                  '0 8px 18px rgba(76,217,255,0.8)';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow =
+                  '0 0 10px rgba(76,217,255,0.6)';
+              }}
+            >
+              <span style={{ fontSize: 16 }}>▶</span>
+              <span>Live Demo</span>
+            </a>
+
+            <a
+              href="https://github.com/Jaisharma2512/security-playground"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                padding: '6px 14px',
+                borderRadius: 999,
+                backgroundColor: '#121b2c',
+                border: '1px solid rgba(76,217,255,0.7)',
+                color: '#4cd9ff',
+                fontWeight: 600,
+                fontSize: 14,
+                textDecoration: 'none',
+                boxShadow: '0 0 8px rgba(76,217,255,0.5)',
+                transform: 'translateY(0)',
+                transition:
+                  'background-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease',
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.backgroundColor = '#4cd9ff';
+                e.currentTarget.style.color = '#06101f';
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow =
+                  '0 8px 16px rgba(76,217,255,0.9)';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.backgroundColor = '#121b2c';
+                e.currentTarget.style.color = '#4cd9ff';
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow =
+                  '0 0 8px rgba(76,217,255,0.5)';
+              }}
+            >
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 16 16"
+                width="16"
+                height="16"
+                fill="currentColor"
+                style={{ display: 'block' }}
+              >
+                <path d="M8 0.25a7.75 7.75 0 0 0-2.45 15.1c.39.07.53-.17.53-.37v-1.3c-2.17.47-2.63-1.04-2.63-1.04-.35-.9-.86-1.14-.86-1.14-.7-.48.05-.47.05-.47.77.05 1.18.8 1.18.8.69 1.18 1.82.84 2.26.64.07-.5.27-.84.5-1.03-1.73-.2-3.55-.87-3.55-3.9 0-.86.31-1.57.82-2.13-.08-.2-.36-1.02.08-2.12 0 0 .68-.22 2.23.81a7.58 7.58 0 0 1 4.06 0c1.55-1.03 2.23-.81 2.23-.81.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.13 0 3.04-1.82 3.7-3.56 3.9.28.24.53.73.53 1.48v2.19c0 .21.14.45.54.37A7.75 7.75 0 0 0 8 .25z" />
+              </svg>
+              <span>GitHub</span>
             </a>
           </p>
+
           <ul style={{ paddingLeft: 22, color: '#9abff2', lineHeight: 1.8 }}>
-            <li>Developed a containerized web server simulating security vulnerabilities to facilitate hands-on learning in Dockerized environments.</li>
-            <li>Orchestrated deployment on GKE with Jenkins pipelines and configured NGINX reverse proxies for realistic sandbox testing of security issues.</li>
+            <li>
+              Developed a containerized web server simulating security vulnerabilities to
+              facilitate hands-on learning in Dockerized environments.
+            </li>
+            <li>
+              Orchestrated deployment on GKE with Jenkins pipelines and configured NGINX
+              reverse proxies for realistic sandbox testing of security issues.
+            </li>
           </ul>
         </div>
 
+        {/* Small Boy */}
         <div>
           <h3
             style={{
@@ -331,18 +504,117 @@ const sections = [
           >
             Small Boy
           </h3>
-          <p>
-            <a href="https://smallboy.danklofan.com" target="_blank" rel="noopener noreferrer" style={linkStyle}>
-              Live Demo
-            </a>{' '}
-            |{' '}
-            <a href="https://github.com/Jaisharma2512/Smallboy/tree/k8s-resources" target="_blank" rel="noopener noreferrer" style={linkStyle}>
-              GitHub
+
+          <p style={{ display: 'flex', gap: 12, margin: '8px 0 14px 0', flexWrap: 'wrap' }}>
+            <a
+              href="https://smallboy.danklofan.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                padding: '6px 14px',
+                borderRadius: 999,
+                background:
+                  'linear-gradient(135deg, rgba(76,217,255,0.25), rgba(0,123,255,0.45))',
+                color: '#0b1726',
+                fontWeight: 600,
+                fontSize: 14,
+                textDecoration: 'none',
+                boxShadow: '0 0 10px rgba(76,217,255,0.6)',
+                transform: 'translateY(0)',
+                transition:
+                  'background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease',
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow =
+                  '0 8px 18px rgba(76,217,255,0.8)';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow =
+                  '0 0 10px rgba(76,217,255,0.6)';
+              }}
+            >
+              <span style={{ fontSize: 16 }}>▶</span>
+              <span>Live Demo</span>
+            </a>
+
+            <a
+              href="https://github.com/Jaisharma2512/Smallboy/tree/k8s-resources"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                padding: '6px 14px',
+                borderRadius: 999,
+                backgroundColor: '#121b2c',
+                border: '1px solid rgba(76,217,255,0.7)',
+                color: '#4cd9ff',
+                fontWeight: 600,
+                fontSize: 14,
+                textDecoration: 'none',
+                boxShadow: '0 0 8px rgba(76,217,255,0.5)',
+                transform: 'translateY(0)',
+                transition:
+                  'background-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease',
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.backgroundColor = '#4cd9ff';
+                e.currentTarget.style.color = '#06101f';
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow =
+                  '0 8px 16px rgba(76,217,255,0.9)';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.backgroundColor = '#121b2c';
+                e.currentTarget.style.color = '#4cd9ff';
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow =
+                  '0 0 8px rgba(76,217,255,0.5)';
+              }}
+            >
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 16 16"
+                width="16"
+                height="16"
+                fill="currentColor"
+                style={{ display: 'block' }}
+              >
+                <path d="M8 0.25a7.75 7.75 0 0 0-2.45 15.1c.39.07.53-.17.53-.37v-1.3c-2.17.47-2.63-1.04-2.63-1.04-.35-.9-.86-1.14-.86-1.14-.7-.48.05-.47.05-.47.77.05 1.18.8 1.18.8.69 1.18 1.82.84 2.26.64.07-.5.27-.84.5-1.03-1.73-.2-3.55-.87-3.55-3.9 0-.86.31-1.57.82-2.13-.08-.2-.36-1.02.08-2.12 0 0 .68-.22 2.23.81a7.58 7.58 0 0 1 4.06 0c1.55-1.03 2.23-.81 2.23-.81.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.13 0 3.04-1.82 3.7-3.56 3.9.28.24.53.73.53 1.48v2.19c0 .21.14.45.54.37A7.75 7.75 0 0 0 8 .25z" />
+              </svg>
+              <span>GitHub</span>
             </a>
           </p>
+
           <ul style={{ paddingLeft: 22, color: '#9abff2', lineHeight: 1.8 }}>
-            <li>Automated GKE provisioning using Terraform for a URL shortener application, boosting infrastructure deployment efficiency by 80%.</li>
-            <li>Architected CI/CD pipelines leveraging Jenkins and GitHub Actions, using Helm charts and ArgoCD for seamless containerized deployments with zero downtime.</li>
+            <li>
+              <span
+                style={{
+                  display: 'inline-block',
+                  padding: '0 6px',
+                  marginRight: 4,
+                  borderRadius: 10,
+                  backgroundColor: 'rgba(76,217,255,0.15)',
+                  color: '#61dfff',
+                  fontWeight: 700,
+                  fontSize: 13,
+                }}
+              >
+                +80% efficiency
+              </span>
+              Automated GKE provisioning using Terraform for a URL shortener application, boosting
+              infrastructure deployment efficiency by 80%.
+            </li>
+            <li>
+              Architected CI/CD pipelines leveraging Jenkins and GitHub Actions, using Helm charts
+              and ArgoCD for seamless containerized deployments with zero downtime.
+            </li>
           </ul>
         </div>
       </div>
@@ -467,18 +739,73 @@ export default function PortfolioPage() {
         <div style={{ flex: 1, minWidth: 150 }}>
           <p style={{ fontSize: 16, lineHeight: 1.6, color: '#4cd9ff', margin: 0 }}>
             Let's connect! Find me on{' '}
-            <a href="https://www.linkedin.com/in/jaisharma2512/" target="_blank" rel="noopener noreferrer" style={linkStyle}>
-              LinkedIn
+            <a
+              href="https://www.linkedin.com/in/jaisharma2512/"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={linkStyle}
+            >
+              <span
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
+                }}
+              >
+                <img
+                  src="/icons/linkedin.svg"
+                  alt="LinkedIn"
+                  style={{ width: 16, height: 16 }}
+                />
+                <span>LinkedIn</span>
+              </span>
             </a>{' '}
             ,{' '}
-            <a href="https://github.com/Jaisharma2512/Smallboy" target="_blank" rel="noopener noreferrer" style={linkStyle}>
-              GitHub
+            <a
+              href="https://github.com/Jaisharma2512/Smallboy"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={linkStyle}
+            >
+              <span
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
+                }}
+              >
+                <img
+                  src="/icons/github.svg"
+                  alt="GitHub"
+                  style={{ width: 16, height: 16 }}
+                />
+                <span>GitHub</span>
+              </span>
             </a>{' '}
             ,{' '}
-            <a href="https://www.fiverr.com/sellers/jaisharma2512/edit" target="_blank" rel="noopener noreferrer" style={linkStyle}>
-              Fiverr
+            <a
+              href="https://www.fiverr.com/sellers/jaisharma2512/edit"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={linkStyle}
+            >
+              <span
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
+                }}
+              >
+                <img
+                  src="/icons/fiverr.svg"
+                  alt="Fiverr"
+                  style={{ width: 16, height: 16 }}
+                />
+                <span>Fiverr</span>
+              </span>
             </a>{' '}
-            or reach out for collaborations, mentorship, or tech discussions. Always eager to meet fellow cloud and DevOps enthusiasts!
+            or reach out for collaborations, mentorship, or tech discussions. Always eager to meet
+            fellow cloud and DevOps enthusiasts!
           </p>
         </div>
       </section>
