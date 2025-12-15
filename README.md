@@ -1,4 +1,4 @@
-**🚀 Jai Sharma - Cloud & DevOps Engineer Portfolio Game**
+**🚀 Poru - Portfolio Game**
 
 <img width="1918" height="883" alt="image" src="https://github.com/user-attachments/assets/3e61d1b3-cb90-4d23-b822-ca63f8e00326" />
 
