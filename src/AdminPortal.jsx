@@ -160,8 +160,8 @@ function LoginScreen({ onLogin }) {
         </div>
         <div style={s.card}>
           <form onSubmit={handleLogin}>
-            <Input label="Username" value={username} onChange={setUsername} placeholder="danklofan" />
-            <Input label="Password" value={password} onChange={setPassword} placeholder="••••••••" type="password" />
+            <Input label="Username" value={username} onChange={setUsername} placeholder="" />
+            <Input label="Password" value={password} onChange={setPassword} placeholder="" type="password" />
             {error && (
               <div style={{ backgroundColor: C.dangerDim, border: `1px solid ${C.danger}`, borderRadius: 8, padding: '10px 14px', fontSize: 13, color: C.danger, marginBottom: 16 }}>
                 {error}
