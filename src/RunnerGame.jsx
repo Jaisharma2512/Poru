@@ -7,15 +7,18 @@ const ORB_SIZE = 48;
 // Portfolio info for all phases
 const portfolioInfo = {
   college: 'Bachelor of Technology in Computer Science Engineering\nGraduated July 2023',
-  projects: 'Smallboy | GitHub, Live Demo\nSecurity Playground | GitHub, Live Demo',
+  projects:
+    'Manucollection.in | GitHub, Live Demo\nSmallboy | GitHub, Live Demo\nSecurity Playground | GitHub, Live Demo',
   skills:
     'Cloud-native DevOps with Kubernetes, Docker, Terraform, CI/CD, and observability using Elasticsearch, Kibana, and Fluent Bit.',
   certificates: 'Google Cloud Associate Cloud Engineer & IEEE Appreciation.',
+  unilog: 'CloudOps Engineer at Unilog Corp\nManaging cloud infrastructure, observability, and deployment automation.',
 };
 
-// Custom titles for info windows (for skills orb)
+// Custom titles for info windows
 const infoTitles = {
   skills: 'Cloud & Observability Engineer',
+  unilog: 'Unilog Corp',
 };
 
 // Links used in info windows
@@ -23,6 +26,8 @@ const links = {
   github: 'https://github.com/Jaisharma2512/Smallboy',
   linkedin: 'https://www.linkedin.com/in/jaisharma2512/',
   freelancer: 'https://www.fiverr.com/sellers/jaisharma2512/edit',
+  manucollectionProject: 'https://github.com/Jaisharma2512/manucollection',
+  manucollectionLive: 'https://manucollection.in',
   smallboyProject: 'https://github.com/Jaisharma2512/Smallboy/tree/k8s-resources',
   securityPlaygroundProject: 'https://github.com/Jaisharma2512/security-playground',
   smallboyLive: 'https://smallboy.danklofan.com',
@@ -32,13 +37,13 @@ const links = {
 };
 
 // Orbs per phase
-const phaseOneOrbs = [{ x: 600, key: 'college' }];
-
-const phaseTwoOrbs = [{ x: 400, key: 'projects' }];
-
-const phaseThreeOrbs = [{ x: 600, key: 'skills' }];
-
-const phaseFourOrbs = [{ x: 600, key: 'certificates' }];
+// Phase 1 = College  →  Phase 2 = Projects  →  Phase 3 = Unilog (new)
+// Phase 4 = Zscaler/Skills  →  Phase 5 = Certificates
+const phaseOneOrbs   = [{ x: 600, key: 'college' }];
+const phaseTwoOrbs   = [{ x: 400, key: 'projects' }];
+const phaseThreeOrbs = [{ x: 600, key: 'unilog' }];   // NEW — Unilog Corp phase
+const phaseFourOrbs  = [{ x: 600, key: 'skills' }];   // was phase 3
+const phaseFiveOrbs  = [{ x: 600, key: 'certificates' }]; // was phase 4
 
 function getCanvasSize() {
   const isMobile = window.innerWidth <= 800;
@@ -89,6 +94,7 @@ function RunnerGame() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Load assets — background changes per phase
   useEffect(() => {
     if (!gameStarted) return;
 
@@ -103,9 +109,11 @@ function RunnerGame() {
 
     assets.bg = new window.Image();
     if (gamePhase === 1) {
-      assets.bg.src = '/graphic.jpg';
+      assets.bg.src = '/graphic.jpg';        // College phase
     } else if (gamePhase === 3) {
-      assets.bg.src = '/zscaler.jpg';
+      assets.bg.src = '/server_room_bg.png'; // Unilog Corp phase (was zscaler phase)
+    } else if (gamePhase === 4) {
+      assets.bg.src = '/zscaler.jpg';        // Zscaler / Skills phase
     } else {
       assets.bg.src = '/server_room_bg.png';
     }
@@ -166,6 +174,18 @@ function RunnerGame() {
     };
   }, [gameStarted, paused]);
 
+  // Helper: advance to next phase
+  function advancePhase(currentPhase) {
+    const next = currentPhase + 1;
+    collectedOrbsRef.current.clear();
+    setScore(0);
+    setActiveInfo(null);
+    setInfoText('');
+    setInfoVisible(false);
+    setAssetsLoaded(false);
+    setGamePhase(next);
+  }
+
   useEffect(() => {
     if (!gameStarted || !assetsLoaded) return;
     if (paused) return;
@@ -184,30 +204,15 @@ function RunnerGame() {
 
       playerX.current += RUN_SPEED;
 
+      // Auto-advance phase when player runs off screen (phases 2–4)
       if (playerX.current > canvasSize.width) {
         playerX.current = 0;
-
-        if (gamePhase === 2) {
-          setGamePhase(3);
-          collectedOrbsRef.current.clear();
-          setScore(0);
-          setActiveInfo(null);
-          setInfoText('');
-          setInfoVisible(false);
-          setAssetsLoaded(false);
-        } else if (gamePhase === 3) {
-          setGamePhase(4);
-          collectedOrbsRef.current.clear();
-          setScore(0);
-          setActiveInfo(null);
-          setInfoText('');
-          setInfoVisible(false);
-          setAssetsLoaded(false);
-        }
+        if (gamePhase === 2) advancePhase(2); // → 3 (Unilog)
+        else if (gamePhase === 3) advancePhase(3); // → 4 (Zscaler/Skills)
+        else if (gamePhase === 4) advancePhase(4); // → 5 (Certificates)
       }
 
       ctx.clearRect(0, 0, canvasSize.width, canvasSize.height);
-
       ctx.drawImage(imagesRef.current.bg, 0, 0, canvasSize.width, canvasSize.height);
 
       ctx.fillStyle = 'rgba(30,60,90,0.3)';
@@ -221,23 +226,15 @@ function RunnerGame() {
         PLAYER_SIZE
       );
 
+      // Select orbs for current phase
       let currentOrbs = [];
-
       switch (gamePhase) {
-        case 1:
-          currentOrbs = phaseOneOrbs;
-          break;
-        case 2:
-          currentOrbs = phaseTwoOrbs;
-          break;
-        case 3:
-          currentOrbs = phaseThreeOrbs;
-          break;
-        case 4:
-          currentOrbs = phaseFourOrbs;
-          break;
-        default:
-          currentOrbs = [];
+        case 1: currentOrbs = phaseOneOrbs;   break;
+        case 2: currentOrbs = phaseTwoOrbs;   break;
+        case 3: currentOrbs = phaseThreeOrbs; break; // Unilog
+        case 4: currentOrbs = phaseFourOrbs;  break; // Zscaler/Skills
+        case 5: currentOrbs = phaseFiveOrbs;  break; // Certificates
+        default: currentOrbs = [];
       }
 
       currentOrbs.forEach(({ x, key }) => {
@@ -256,16 +253,9 @@ function RunnerGame() {
             setScore(s => s + 1);
             collectedOrbsRef.current.add(key);
 
+            // After collecting college orb, move to projects phase
             if (gamePhase === 1 && key === 'college') {
-              setTimeout(() => {
-                setGamePhase(2);
-                collectedOrbsRef.current.clear();
-                setScore(0);
-                setActiveInfo(null);
-                setInfoText('');
-                setInfoVisible(false);
-                setAssetsLoaded(false);
-              }, 2000);
+              setTimeout(() => advancePhase(1), 2000);
             }
           }
         }
@@ -276,6 +266,7 @@ function RunnerGame() {
     draw();
 
     return () => cancelAnimationFrame(animationFrameId);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameStarted, assetsLoaded, activeInfo, paused, canvasSize, gamePhase]);
 
   useEffect(() => {
@@ -318,8 +309,6 @@ function RunnerGame() {
       textShadow: '0 0 8px #1119',
     };
 
-    const titleToShow = displayTitle;
-
     return (
       <div
         style={{
@@ -328,7 +317,7 @@ function RunnerGame() {
           left: '50%',
           transform: 'translate(-50%, 0)',
           minWidth: 320,
-          maxWidth: 420,
+          maxWidth: 440,
           padding: '28px 18px',
           background: 'rgba(16,32,49,0.87)',
           borderRadius: 18,
@@ -339,7 +328,7 @@ function RunnerGame() {
           whiteSpace: 'pre-line',
         }}
       >
-        <div style={textStyle}>{titleToShow}</div>
+        <div style={textStyle}>{displayTitle}</div>
         <div
           style={{
             color: '#e8f4ff',
@@ -353,8 +342,37 @@ function RunnerGame() {
           {infoText}
         </div>
 
+        {/* Unilog Corp info window */}
+        {activeInfo === 'unilog' && (
+          <div style={{ marginTop: 6, textAlign: 'center' }}>
+            <span style={{ color: blue, fontWeight: 600 }}>
+              CloudOps · Infrastructure Automation · Observability · IaC
+            </span>
+          </div>
+        )}
+
+        {/* Projects info window — now includes Manucollection.in */}
         {activeInfo === 'projects' && (
           <div style={{ marginTop: 6, textAlign: 'left' }}>
+            <div style={{ marginBottom: 5 }}>
+              <strong>Manucollection.in:</strong>{' '}
+              <a
+                href={links.manucollectionProject}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: blue, textDecoration: 'underline', fontSize: 15, marginRight: 8 }}
+              >
+                GitHub
+              </a>
+              <a
+                href={links.manucollectionLive}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: blue, textDecoration: 'underline', fontSize: 15 }}
+              >
+                Live Demo
+              </a>
+            </div>
             <div style={{ marginBottom: 5 }}>
               <strong>Smallboy:</strong>{' '}
               <a
