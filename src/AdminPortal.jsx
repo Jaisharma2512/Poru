@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from './lib/supabase';
 
 // ─── Theme tokens ────────────────────────────────────────────────────────────
@@ -19,8 +19,8 @@ const C = {
 };
 
 const s = {
-  page: { minHeight: '100vh', backgroundColor: C.bg, color: C.text, fontFamily: "'Segoe UI', sans-serif" },
-  card: { backgroundColor: C.surface, border: `1px solid ${C.border}`, borderRadius: 12, padding: 24, marginBottom: 24 },
+  page: { minHeight: '100vh', backgroundColor: C.bg, color: C.text, fontFamily: "'Segoe UI', sans-serif", overflowX: 'hidden', width: '100%' },
+  card: { backgroundColor: C.surface, border: `1px solid ${C.border}`, borderRadius: 12, padding: 16, marginBottom: 16, boxSizing: 'border-box', width: '100%', overflow: 'hidden', wordBreak: 'break-word' },
   input: {
     width: '100%', backgroundColor: '#0d1117', border: `1px solid ${C.border}`,
     borderRadius: 8, padding: '10px 14px', color: C.text, fontSize: 14,
@@ -36,7 +36,7 @@ const s = {
   }),
   sectionTitle: { fontSize: '1.1rem', fontWeight: 700, color: C.accent, marginBottom: 20, paddingBottom: 10, borderBottom: `1px solid ${C.border}` },
   tag: { display: 'inline-flex', alignItems: 'center', gap: 6, backgroundColor: C.accentDim, color: C.accent, border: `1px solid ${C.accentBorder}`, borderRadius: 20, padding: '4px 12px', fontSize: 13, fontWeight: 600 },
-  row: { display: 'flex', gap: 10, alignItems: 'flex-start', flexWrap: 'wrap' },
+  row: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' },
 };
 
 // ─── Reusable components ─────────────────────────────────────────────────────
@@ -123,6 +123,50 @@ function BulletEditor({ bullets, onChange }) {
     </div>
   );
 }
+
+// ─── Image Upload ─────────────────────────────────────────────────────────────
+function ImageUpload({ label, currentUrl, onUpload, bucket = 'logos' }) {
+  const [uploading, setUploading] = useState(false);
+  const [preview, setPreview] = useState(currentUrl || '');
+  const inputRef = useRef(null);
+
+  async function handleFile(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploading(true);
+    const ext = file.name.split('.').pop();
+    const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const { data, error } = await supabase.storage.from(bucket).upload(fileName, file, { upsert: true });
+    if (error) { alert('Upload failed: ' + error.message); setUploading(false); return; }
+    const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(fileName);
+    const publicUrl = urlData.publicUrl;
+    setPreview(publicUrl);
+    onUpload(publicUrl);
+    setUploading(false);
+  }
+
+  return (
+    <div style={{ marginBottom: 16 }}>
+      {label && <label style={s.label}>{label}</label>}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+        {preview && (
+          <img src={preview} alt="preview" style={{ width: 52, height: 52, objectFit: 'contain', borderRadius: 8, backgroundColor: '#fff', padding: 4, border: '1px solid rgba(76,217,255,0.3)' }} />
+        )}
+        <button type="button" onClick={() => inputRef.current?.click()} style={{ ...s.btn('ghost'), fontSize: 12, padding: '8px 16px' }} disabled={uploading}>
+          {uploading ? 'Uploading…' : preview ? '↑ Replace image' : '↑ Upload image'}
+        </button>
+        {preview && (
+          <button type="button" onClick={() => { setPreview(''); onUpload(''); }} style={{ ...s.btn('ghost'), fontSize: 12, padding: '8px 12px', color: C.danger }}>
+            Remove
+          </button>
+        )}
+        <input ref={inputRef} type="file" accept="image/*" capture="environment" onChange={handleFile} style={{ display: 'none' }} />
+      </div>
+      {preview && <div style={{ marginTop: 6, fontSize: 11, color: C.muted, wordBreak: 'break-all' }}>{preview}</div>}
+    </div>
+  );
+}
+
 
 // ─── Login Screen ─────────────────────────────────────────────────────────────
 
@@ -246,7 +290,7 @@ function WorkExperienceSection({ toast }) {
           <Input label="Company" value={form.company || ''} onChange={v => setForm(f => ({ ...f, company: v }))} placeholder="e.g. Unilog Corp" />
           <Input label="Role" value={form.role || ''} onChange={v => setForm(f => ({ ...f, role: v }))} placeholder="e.g. CloudOps Engineer" />
           <Input label="Location" value={form.location || ''} onChange={v => setForm(f => ({ ...f, location: v }))} placeholder="e.g. India" />
-          <Input label="Logo path (from /public)" value={form.logo_url || ''} onChange={v => setForm(f => ({ ...f, logo_url: v }))} placeholder="/unilog-logo.png" />
+          <ImageUpload label="Company Logo" currentUrl={form.logo_url || ''} onUpload={v => setForm(f => ({ ...f, logo_url: v }))} />
           <BulletEditor bullets={form.bullets || ['']} onChange={v => setForm(f => ({ ...f, bullets: v }))} />
           <div style={s.row}>
             <button onClick={save} style={s.btn('primary')} disabled={loading}>{loading ? 'Saving…' : 'Save'}</button>
@@ -264,17 +308,17 @@ function WorkExperienceSection({ toast }) {
         <button onClick={openNew} style={s.btn('primary')}>+ Add</button>
       </div>
       {items.map((item, i) => (
-        <div key={item.id} style={{ ...s.card, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16 }}>
+        <div key={item.id} style={{ ...s.card, display: 'flex', flexDirection: 'column', gap: 12 }}>
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 700, color: C.accent, fontSize: 16 }}>{item.company}</div>
             <div style={{ color: C.muted, fontSize: 13, marginTop: 2 }}>{item.role} · {item.location}</div>
-            <div style={{ color: C.muted, fontSize: 12, marginTop: 6 }}>{item.bullets?.length} bullet{item.bullets?.length !== 1 ? 's' : ''}</div>
+            <div style={{ color: C.muted, fontSize: 12, marginTop: 6, wordBreak: 'break-all' }}>{item.bullets?.length} bullet{item.bullets?.length !== 1 ? 's' : ''}</div>
           </div>
-          <div style={s.row}>
-            <button onClick={() => moveItem(i, -1)} style={s.btn('ghost')}>↑</button>
-            <button onClick={() => moveItem(i, 1)} style={s.btn('ghost')}>↓</button>
-            <button onClick={() => openEdit(item)} style={s.btn('ghost')}>Edit</button>
-            <button onClick={() => remove(item.id)} style={s.btn('danger')}>Delete</button>
+          <div style={{ ...s.row, paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+            <button onClick={() => moveItem(i, -1)} style={{ ...s.btn('ghost'), padding: '6px 12px', fontSize: 12 }}>↑</button>
+            <button onClick={() => moveItem(i, 1)} style={{ ...s.btn('ghost'), padding: '6px 12px', fontSize: 12 }}>↓</button>
+            <button onClick={() => openEdit(item)} style={{ ...s.btn('ghost'), padding: '6px 14px', fontSize: 12 }}>Edit</button>
+            <button onClick={() => remove(item.id)} style={{ ...s.btn('danger'), padding: '6px 14px', fontSize: 12 }}>Delete</button>
           </div>
         </div>
       ))}
@@ -370,17 +414,17 @@ function ProjectsSection({ toast }) {
         <button onClick={openNew} style={s.btn('primary')}>+ Add</button>
       </div>
       {items.map((item, i) => (
-        <div key={item.id} style={{ ...s.card, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16 }}>
+        <div key={item.id} style={{ ...s.card, display: 'flex', flexDirection: 'column', gap: 12 }}>
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 700, color: C.accent, fontSize: 16 }}>{item.title}</div>
             <div style={{ color: C.muted, fontSize: 13, marginTop: 2 }}>{item.tech_stack}</div>
-            <div style={{ color: C.muted, fontSize: 12, marginTop: 6 }}>{item.bullets?.length} bullet{item.bullets?.length !== 1 ? 's' : ''}</div>
+            <div style={{ color: C.muted, fontSize: 12, marginTop: 6, wordBreak: 'break-all' }}>{item.bullets?.length} bullet{item.bullets?.length !== 1 ? 's' : ''}</div>
           </div>
-          <div style={s.row}>
-            <button onClick={() => moveItem(i, -1)} style={s.btn('ghost')}>↑</button>
-            <button onClick={() => moveItem(i, 1)} style={s.btn('ghost')}>↓</button>
-            <button onClick={() => openEdit(item)} style={s.btn('ghost')}>Edit</button>
-            <button onClick={() => remove(item.id)} style={s.btn('danger')}>Delete</button>
+          <div style={{ ...s.row, paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+            <button onClick={() => moveItem(i, -1)} style={{ ...s.btn('ghost'), padding: '6px 12px', fontSize: 12 }}>↑</button>
+            <button onClick={() => moveItem(i, 1)} style={{ ...s.btn('ghost'), padding: '6px 12px', fontSize: 12 }}>↓</button>
+            <button onClick={() => openEdit(item)} style={{ ...s.btn('ghost'), padding: '6px 14px', fontSize: 12 }}>Edit</button>
+            <button onClick={() => remove(item.id)} style={{ ...s.btn('danger'), padding: '6px 14px', fontSize: 12 }}>Delete</button>
           </div>
         </div>
       ))}
@@ -527,7 +571,7 @@ function CertificatesSection({ toast }) {
         <div style={s.card}>
           <Input label="Title" value={form.title || ''} onChange={v => setForm(f => ({ ...f, title: v }))} placeholder="e.g. Google Associate Cloud Engineer" />
           <Input label="Certificate URL" value={form.link || ''} onChange={v => setForm(f => ({ ...f, link: v }))} placeholder="https://..." />
-          <Input label="Logo path (from /public)" value={form.logo_url || ''} onChange={v => setForm(f => ({ ...f, logo_url: v }))} placeholder="/googlecloud.png" />
+          <ImageUpload label="Certificate Logo" currentUrl={form.logo_url || ''} onUpload={v => setForm(f => ({ ...f, logo_url: v }))} />
           <div style={s.row}>
             <button onClick={save} style={s.btn('primary')} disabled={loading}>{loading ? 'Saving…' : 'Save'}</button>
             <button onClick={() => setEditing(null)} style={s.btn('ghost')}>Cancel</button>
@@ -544,16 +588,16 @@ function CertificatesSection({ toast }) {
         <button onClick={openNew} style={s.btn('primary')}>+ Add</button>
       </div>
       {items.map((item, i) => (
-        <div key={item.id} style={{ ...s.card, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16 }}>
+        <div key={item.id} style={{ ...s.card, display: 'flex', flexDirection: 'column', gap: 12 }}>
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 700, color: C.accent, fontSize: 15 }}>{item.title}</div>
-            <div style={{ color: C.muted, fontSize: 12, marginTop: 4 }}>{item.link}</div>
+            <div style={{ color: C.muted, fontSize: 12, marginTop: 4, wordBreak: 'break-all', overflowWrap: 'anywhere' }}>{item.link}</div>
           </div>
-          <div style={s.row}>
-            <button onClick={() => moveItem(i, -1)} style={s.btn('ghost')}>↑</button>
-            <button onClick={() => moveItem(i, 1)} style={s.btn('ghost')}>↓</button>
-            <button onClick={() => openEdit(item)} style={s.btn('ghost')}>Edit</button>
-            <button onClick={() => remove(item.id)} style={s.btn('danger')}>Delete</button>
+          <div style={{ ...s.row, paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+            <button onClick={() => moveItem(i, -1)} style={{ ...s.btn('ghost'), padding: '6px 12px', fontSize: 12 }}>↑</button>
+            <button onClick={() => moveItem(i, 1)} style={{ ...s.btn('ghost'), padding: '6px 12px', fontSize: 12 }}>↓</button>
+            <button onClick={() => openEdit(item)} style={{ ...s.btn('ghost'), padding: '6px 14px', fontSize: 12 }}>Edit</button>
+            <button onClick={() => remove(item.id)} style={{ ...s.btn('danger'), padding: '6px 14px', fontSize: 12 }}>Delete</button>
           </div>
         </div>
       ))}
@@ -588,36 +632,35 @@ export default function AdminPortal() {
   return (
     <div style={s.page}>
       {/* Header */}
-      <div style={{ backgroundColor: C.surface, borderBottom: `1px solid ${C.border}`, padding: '0 32px' }}>
-        <div style={{ maxWidth: 900, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: 60 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <span style={{ color: C.accent, fontWeight: 800, fontSize: 18 }}>⚡ Portfolio CMS</span>
-            <span style={{ color: C.muted, fontSize: 13 }}>· Jai Sharma</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            <a href="/" style={{ color: C.muted, fontSize: 13, textDecoration: 'none' }}>← View portfolio</a>
-            <button onClick={() => setLoggedIn(false)} style={s.btn('ghost')}>Sign out</button>
+      <div style={{ backgroundColor: C.surface, borderBottom: `1px solid ${C.border}`, padding: '0 16px' }}>
+        <div style={{ maxWidth: 900, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: 56, flexWrap: 'wrap', gap: 8, padding: '8px 0' }}>
+          <span style={{ color: C.accent, fontWeight: 800, fontSize: 16 }}>⚡ Portfolio CMS</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <a href="/" style={{ color: C.muted, fontSize: 12, textDecoration: 'none', whiteSpace: 'nowrap' }}>← Portfolio</a>
+            <button onClick={() => setLoggedIn(false)} style={{ ...s.btn('ghost'), fontSize: 12, padding: '6px 12px' }}>Sign out</button>
           </div>
         </div>
       </div>
 
       {/* Tabs */}
-      <div style={{ backgroundColor: C.surface, borderBottom: `1px solid ${C.border}`, padding: '0 32px' }}>
-        <div style={{ maxWidth: 900, margin: '0 auto', display: 'flex', gap: 4 }}>
+      <div style={{ backgroundColor: C.surface, borderBottom: `1px solid ${C.border}`, padding: '0 16px', overflowX: 'auto' }}>
+        <div style={{ maxWidth: 900, margin: '0 auto', display: 'flex', gap: 0, overflowX: 'auto', scrollbarWidth: 'none' }}>
           {TABS.map(tab => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
               style={{
-                padding: '14px 20px',
+                padding: '12px 12px',
                 border: 'none',
                 cursor: 'pointer',
-                fontSize: 13,
+                fontSize: 12,
                 fontWeight: 600,
                 backgroundColor: 'transparent',
                 color: activeTab === tab.key ? C.accent : C.muted,
                 borderBottom: activeTab === tab.key ? `2px solid ${C.accent}` : '2px solid transparent',
                 transition: 'all 0.2s',
+                whiteSpace: 'nowrap',
+                flexShrink: 0,
               }}
             >
               {tab.label}
@@ -627,7 +670,7 @@ export default function AdminPortal() {
       </div>
 
       {/* Content */}
-      <div style={{ maxWidth: 900, margin: '32px auto', padding: '0 32px' }}>
+      <div style={{ maxWidth: 900, margin: '24px auto', padding: '0 16px', boxSizing: 'border-box' }}>
         {activeTab === 'experience' && <WorkExperienceSection toast={showToast} />}
         {activeTab === 'projects'   && <ProjectsSection toast={showToast} />}
         {activeTab === 'skills'     && <SkillsSection toast={showToast} />}
