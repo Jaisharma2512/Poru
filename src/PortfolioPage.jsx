@@ -23,21 +23,35 @@ function useScrollFadeIn() {
   return [domRef, isVisible];
 }
 
-function FadeInSection({ id, title, children }) {
+function FadeInSection({ id, title, children, fullWidth = false }) {
   const [ref, visible] = useScrollFadeIn();
+  const isMobile = useIsMobile(800);
+  const useFullWidth = fullWidth && !isMobile;
   return (
     <section id={id} ref={ref} style={{
       opacity: visible ? 1 : 0,
       transform: visible ? 'translateY(0)' : 'translateY(20px)',
       transition: 'opacity 0.8s ease-out, transform 0.8s ease-out',
       marginBottom: 60,
+      width: '100%',
     }}>
-      {title && <h2 style={{
-        borderBottom: '2px solid #4cd9ff', paddingBottom: 6, marginBottom: 20,
-        fontSize: '1.8rem', fontWeight: '700', color: '#49c4ff',
-        textShadow: '0 0 6px rgba(76, 217, 255, 0.7)',
-      }}>{title}</h2>}
-      {children}
+      {title && (
+        <h2 style={{
+          borderBottom: '2px solid #4cd9ff', paddingBottom: 6, marginBottom: 20,
+          fontSize: '1.8rem', fontWeight: '700', color: '#49c4ff',
+          textShadow: '0 0 6px rgba(76, 217, 255, 0.7)',
+          maxWidth: useFullWidth ? '100%' : 900,
+          margin: '0 auto 20px auto',
+          padding: useFullWidth ? '0 20px 6px 20px' : '0 0 6px 0',
+        }}>{title}</h2>
+      )}
+      <div style={{
+        maxWidth: useFullWidth ? '100%' : 900,
+        margin: '0 auto',
+        padding: useFullWidth ? '0 20px' : '0',
+      }}>
+        {children}
+      </div>
     </section>
   );
 }
@@ -214,7 +228,7 @@ function UptimeWidget() {
   const anyDown = statuses.some(s => s.status === 'down');
 
   return (
-    <div style={{ backgroundColor: '#0d1117', border: '1px solid rgba(76,217,255,0.2)', borderRadius: 14, padding: 20, fontFamily: 'monospace' }}>
+    <div style={{ backgroundColor: '#0d1117', border: '1px solid rgba(76,217,255,0.2)', borderRadius: 14, padding: 20, fontFamily: 'monospace', height: '100%', boxSizing: 'border-box' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, paddingBottom: 14, borderBottom: '1px solid rgba(76,217,255,0.1)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <span style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: anyDown ? '#f85149' : '#3fb950', display: 'inline-block', boxShadow: `0 0 8px ${anyDown ? '#f85149' : '#3fb950'}` }} />
@@ -267,9 +281,11 @@ function KubectlPods({ skills }) {
   const cols = isMobileView ? '1fr 70px' : '2fr 80px 60px 60px 60px';
 
   return (
-    <div style={{ backgroundColor: '#0d1117', borderRadius: 14, border: '1px solid rgba(76,217,255,0.2)', overflow: 'hidden', fontFamily: 'monospace', fontSize: 12 }}>
-      <div style={{ backgroundColor: '#161b22', padding: '10px 16px', borderBottom: '1px solid rgba(76,217,255,0.15)', color: '#4cd9ff', fontSize: 12 }}>
+    <div style={{ backgroundColor: '#0d1117', borderRadius: 14, border: '1px solid rgba(76,217,255,0.2)', overflow: 'hidden', fontFamily: 'monospace', fontSize: 12, height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ backgroundColor: '#161b22', padding: '10px 16px', borderBottom: '1px solid rgba(76,217,255,0.15)', color: '#4cd9ff', fontSize: 12, position: 'relative', overflow: 'hidden' }}>
+        <span style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(90deg, transparent, #4cd9ff, transparent)', animation: 'scan 3s linear infinite', opacity: 0.6 }} />
         $ kubectl get pods -n skills
+        <style>{`@keyframes scan { 0%{transform:translateX(-100%)} 100%{transform:translateX(100%)} }`}</style>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: cols, padding: '8px 16px', color: '#8b949e', fontSize: 11, borderBottom: '1px solid rgba(255,255,255,0.05)', gap: 8 }}>
         <span>NAME</span>
@@ -285,9 +301,9 @@ function KubectlPods({ skills }) {
           const state = ((key.toString().charCodeAt(0) + tick) % 15 === 0) ? 'Pending' : 'Running';
           const stateColor = state === 'Running' ? '#3fb950' : '#e6a817';
           return (
-            <div key={key} style={{ display: 'grid', gridTemplateColumns: cols, padding: '9px 16px', gap: 8, borderBottom: '1px solid rgba(255,255,255,0.03)', cursor: 'default', alignItems: 'center' }}
-              onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(76,217,255,0.04)'}
-              onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+            <div key={key} style={{ display: 'grid', gridTemplateColumns: cols, padding: '9px 16px', gap: 8, borderBottom: '1px solid rgba(255,255,255,0.03)', cursor: 'default', alignItems: 'center', transition: 'background 0.15s ease, box-shadow 0.15s ease' }}
+              onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(76,217,255,0.08)'; e.currentTarget.style.boxShadow = 'inset 3px 0 0 #4cd9ff'; }}
+              onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.boxShadow = 'none'; }}
             >
               <span style={{ color: '#e6edf3', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: isMobileView ? 12 : 12 }}>{podName}</span>
               <span style={{ color: stateColor, fontWeight: 700, fontSize: 11 }}>{state}</span>
@@ -375,7 +391,7 @@ function DeploymentBadge() {
   const si = s => s === 'success' ? '✓' : '✗';
 
   return (
-    <div style={{ backgroundColor: '#0d1117', borderRadius: 14, border: '1px solid rgba(76,217,255,0.2)', overflow: 'hidden', fontFamily: 'monospace' }}>
+    <div style={{ backgroundColor: '#0d1117', borderRadius: 14, border: '1px solid rgba(76,217,255,0.2)', overflow: 'hidden', fontFamily: 'monospace', height: '100%', boxSizing: 'border-box' }}>
       <div style={{ backgroundColor: '#161b22', padding: '10px 16px', borderBottom: '1px solid rgba(76,217,255,0.1)', color: '#4cd9ff', fontSize: 12 }}>
         ⬡ deployment registry — docker hub
       </div>
@@ -478,9 +494,12 @@ function Skeleton() {
 function WorkExperience() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const isMobile = useIsMobile(800);
   useEffect(() => { supabase.from('work_experience').select('*').order('sort_order').then(({ data }) => { setItems(data || []); setLoading(false); }); }, []);
   if (loading) return <><Skeleton /><Skeleton /></>;
-  return (
+
+  // Mobile: keep existing card layout
+  if (isMobile) return (
     <>
       {items.map(item => (
         <div key={item.id} style={{ backgroundColor: '#1f2e44', borderRadius: 14, boxShadow: '0 8px 20px rgba(0,123,255,0.4)', padding: 24, marginBottom: 32, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 24, transition: 'background 0.3s ease' }} onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#29508d')} onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#1f2e44')}>
@@ -494,21 +513,126 @@ function WorkExperience() {
       ))}
     </>
   );
+
+  // Desktop: vertical timeline
+  return (
+    <div style={{ position: 'relative', paddingLeft: 32 }}>
+      {/* Vertical line */}
+      <div style={{ position: 'absolute', left: 10, top: 8, bottom: 8, width: 2, backgroundColor: 'rgba(76,217,255,0.15)', borderRadius: 2 }} />
+
+      {items.map((item, idx) => {
+        const isCurrent = idx === 0;
+        return (
+          <div key={item.id} style={{ position: 'relative', marginBottom: idx < items.length - 1 ? 48 : 0 }}>
+            {/* Timeline dot */}
+            <div style={{
+              position: 'absolute', left: -26, top: 20,
+              width: 14, height: 14, borderRadius: '50%',
+              backgroundColor: isCurrent ? '#4cd9ff' : '#2a3f5f',
+              border: `2px solid ${isCurrent ? '#4cd9ff' : '#30363d'}`,
+              boxShadow: isCurrent ? '0 0 12px rgba(76,217,255,0.6)' : 'none',
+              zIndex: 1,
+            }} />
+
+            {/* Card */}
+            <div style={{
+              backgroundColor: '#0d1117',
+              border: `1px solid ${isCurrent ? 'rgba(76,217,255,0.3)' : 'rgba(255,255,255,0.06)'}`,
+              borderRadius: 16,
+              padding: '24px 28px',
+              transition: 'border-color 0.3s ease, background 0.3s ease',
+            }}
+              onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#0f1f35'; e.currentTarget.style.borderColor = 'rgba(76,217,255,0.4)'; }}
+              onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#0d1117'; e.currentTarget.style.borderColor = isCurrent ? 'rgba(76,217,255,0.3)' : 'rgba(255,255,255,0.06)'; }}
+            >
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 20, marginBottom: 16 }}>
+                {/* Logo */}
+                {item.logo_url && (
+                  <img src={item.logo_url} alt={item.company} style={{
+                    width: 52, height: 52, objectFit: 'contain', borderRadius: 10,
+                    backgroundColor: '#fff', padding: 6, flexShrink: 0,
+                    boxShadow: isCurrent ? '0 0 14px rgba(76,217,255,0.4)' : 'none',
+                  }} />
+                )}
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 4 }}>
+                    <h3 style={{ margin: 0, color: isCurrent ? '#61dfff' : '#e6edf3', fontWeight: 800, fontSize: '1.3rem', textShadow: isCurrent ? '0 0 6px rgba(76,217,255,0.5)' : 'none' }}>
+                      {item.company}
+                    </h3>
+                    {isCurrent && (
+                      <span style={{
+                        fontSize: 11, fontFamily: 'monospace', fontWeight: 700,
+                        backgroundColor: 'rgba(63,185,80,0.15)', color: '#3fb950',
+                        border: '1px solid rgba(63,185,80,0.3)',
+                        borderRadius: 20, padding: '2px 10px', letterSpacing: '0.06em',
+                      }}>● CURRENT</span>
+                    )}
+                  </div>
+                  <p style={{ margin: 0, color: '#8b949e', fontSize: 14, fontFamily: 'monospace' }}>
+                    {item.role} · {item.location}
+                  </p>
+                </div>
+              </div>
+
+              {/* Bullets */}
+              <ul style={{ margin: 0, paddingLeft: 20, color: '#8b949e', fontSize: 14, lineHeight: 1.8 }}>
+                {(item.bullets || []).map((b, i) => (
+                  <li key={i} style={{ marginBottom: 4, color: i === 0 ? '#c9d1d9' : '#8b949e' }}>{b}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
 }
+
 
 function Projects() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   useEffect(() => { supabase.from('projects').select('*').order('sort_order').then(({ data }) => { setItems(data || []); setLoading(false); }); }, []);
   if (loading) return <><Skeleton /><Skeleton /></>;
+
+  const accentColors = [
+    'linear-gradient(90deg,#4cd9ff,#0070f3)',
+    'linear-gradient(90deg,#a78bfa,#4cd9ff)',
+    'linear-gradient(90deg,#3fb950,#4cd9ff)',
+  ];
+
   return (
-    <div style={{ backgroundColor: '#1f2e44', borderRadius: 14, boxShadow: '0 8px 20px rgba(0,123,255,0.4)', padding: 24, marginBottom: 32, transition: 'background 0.3s ease' }} onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#29508d')} onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#1f2e44')}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16, height: '100%' }}>
       {items.map((item, idx) => (
-        <div key={item.id} style={{ marginBottom: idx < items.length - 1 ? 28 : 0, paddingBottom: idx < items.length - 1 ? 28 : 0, borderBottom: idx < items.length - 1 ? '1px solid rgba(76,217,255,0.12)' : 'none' }}>
-          <h3 style={{ color: '#61dfff', fontWeight: 700, fontSize: '1.4rem', marginBottom: 4, textShadow: '0 0 10px rgba(76,217,255,0.7)' }}>{item.title}</h3>
-          {item.tech_stack && <p style={{ color: '#9abff2', fontSize: 13, margin: '0 0 8px 0' }}>{item.tech_stack}</p>}
-          <ProjectLinks liveUrl={item.live_url} githubUrl={item.github_url} />
-          <ul style={{ paddingLeft: 22, color: '#9abff2', lineHeight: 1.8 }}>{(item.bullets || []).map((b, i) => <li key={i}>{b}</li>)}</ul>
+        <div key={item.id} style={{
+          backgroundColor: '#0d1117', borderRadius: 14,
+          border: '1px solid rgba(76,217,255,0.12)',
+          overflow: 'hidden', transition: 'border-color 0.3s ease, transform 0.2s ease',
+        }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(76,217,255,0.4)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(76,217,255,0.12)'; e.currentTarget.style.transform = 'translateY(0)'; }}
+        >
+          {/* Colored top accent bar */}
+          <div style={{ height: 3, background: accentColors[idx % accentColors.length] }} />
+          <div style={{ padding: '16px 20px' }}>
+            <h3 style={{ color: '#e6edf3', fontWeight: 800, fontSize: '1.2rem', marginBottom: 10, letterSpacing: '-0.01em' }}>{item.title}</h3>
+            {/* Tech stack chips */}
+            {item.tech_stack && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 }}>
+                {item.tech_stack.split('·').map(t => (
+                  <span key={t} style={{
+                    fontSize: 11, fontFamily: 'monospace', fontWeight: 600,
+                    backgroundColor: 'rgba(76,217,255,0.08)', border: '1px solid rgba(76,217,255,0.2)',
+                    color: '#4cd9ff', borderRadius: 6, padding: '2px 8px',
+                  }}>{t.trim()}</span>
+                ))}
+              </div>
+            )}
+            <ProjectLinks liveUrl={item.live_url} githubUrl={item.github_url} />
+            <ul style={{ paddingLeft: 20, color: '#8b949e', lineHeight: 1.8, fontSize: 13, margin: 0 }}>
+              {(item.bullets || []).map((b, i) => <li key={i} style={{ marginBottom: 3 }}>{b}</li>)}
+            </ul>
+          </div>
         </div>
       ))}
     </div>
@@ -686,6 +810,128 @@ function Certificates() {
   );
 }
 
+
+
+// ── BENTO SECTION HELPERS ─────────────────────────────────────────────────────
+function BentoSection({ id, title, children }) {
+  const [ref, visible] = useScrollFadeIn();
+  return (
+    <section id={id} ref={ref} style={{
+      opacity: visible ? 1 : 0,
+      transform: visible ? 'translateY(0)' : 'translateY(20px)',
+      transition: 'opacity 0.8s ease-out, transform 0.8s ease-out',
+      marginBottom: 48, width: '100%',
+    }}>
+      <h2 style={{
+        borderBottom: '2px solid #4cd9ff', paddingBottom: 6, marginBottom: 20,
+        fontSize: '1.8rem', fontWeight: 700, color: '#49c4ff',
+        textShadow: '0 0 6px rgba(76,217,255,0.7)',
+        padding: '0 0 6px 0',
+      }}>{title}</h2>
+      <div>{children}</div>
+    </section>
+  );
+}
+
+function BentoSectionInner({ id, title, children, stretch = false }) {
+  const [ref, visible] = useScrollFadeIn();
+  return (
+    <section id={id} ref={ref} style={{
+      opacity: visible ? 1 : 0,
+      transform: visible ? 'translateY(0)' : 'translateY(20px)',
+      transition: 'opacity 0.8s ease-out, transform 0.8s ease-out',
+      display: 'flex', flexDirection: 'column',
+      flex: stretch ? 1 : 'unset',
+      height: stretch ? '100%' : 'auto',
+    }}>
+      <h2 style={{
+        borderBottom: '2px solid #4cd9ff', paddingBottom: 6, marginBottom: 20,
+        fontSize: '1.5rem', fontWeight: 700, color: '#49c4ff',
+        textShadow: '0 0 6px rgba(76,217,255,0.7)', flexShrink: 0,
+      }}>{title}</h2>
+      <div style={{ flex: stretch ? 1 : 'unset', display: 'flex', flexDirection: 'column' }}>
+        {children}
+      </div>
+    </section>
+  );
+}
+
+// ── EDUCATION CARD (extracted for reuse) ─────────────────────────────────────
+function EducationCard() {
+  return (
+    <div style={{
+      backgroundColor: '#0d1117', borderRadius: 16,
+      border: '1px solid rgba(76,217,255,0.2)',
+      padding: 24, height: '100%', boxSizing: 'border-box',
+      transition: 'border-color 0.3s ease',
+    }}
+      onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(76,217,255,0.4)'}
+      onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(76,217,255,0.2)'}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
+        <img src="/graphic-era-logo.jpg" alt="Graphic Era" style={{
+          width: 56, height: 56, objectFit: 'contain', borderRadius: 10,
+          boxShadow: '0 0 14px rgba(76,217,255,0.4)', flexShrink: 0,
+          transition: 'transform 0.3s ease',
+        }}
+          onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.1)'}
+          onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+        />
+        <div>
+          <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700, color: '#61dfff', textShadow: '0 0 10px rgba(76,217,255,0.5)' }}>
+            Graphic Era Deemed to be University
+          </h3>
+          <p style={{ fontSize: 14, color: '#8b949e', margin: '4px 0 0', fontFamily: 'monospace' }}>
+            B.Tech Computer Science Engineering
+          </p>
+        </div>
+      </div>
+      <div style={{ borderTop: '1px solid rgba(76,217,255,0.1)', paddingTop: 14, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
+        <span style={{ color: '#e4f4ff', fontWeight: 600, fontSize: 14 }}>Graduated July 2023</span>
+        <span style={{
+          display: 'inline-block', padding: '4px 12px', borderRadius: 999,
+          backgroundColor: 'rgba(76,217,255,0.1)', color: '#61dfff',
+          fontSize: 12, fontWeight: 600, border: '1px solid rgba(76,217,255,0.2)',
+        }}>
+          IEEE Certificate of Appreciation
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// ── DESKTOP TYPEWRITER (used in split layout) ─────────────────────────────────
+function DesktopTypewriter() {
+  const roles = ['DevOps Engineer', 'CloudOps Engineer', 'SRE', 'Infrastructure Architect', 'CI/CD Specialist'];
+  const [roleIdx, setRoleIdx] = useState(0);
+  const [displayed, setDisplayed] = useState('');
+  const [deleting, setDeleting] = useState(false);
+  const [charIdx, setCharIdx] = useState(0);
+
+  useEffect(() => {
+    const current = roles[roleIdx];
+    let timeout;
+    if (!deleting && charIdx < current.length) {
+      timeout = setTimeout(() => { setDisplayed(current.slice(0, charIdx + 1)); setCharIdx(c => c + 1); }, 80);
+    } else if (!deleting && charIdx === current.length) {
+      timeout = setTimeout(() => setDeleting(true), 1800);
+    } else if (deleting && charIdx > 0) {
+      timeout = setTimeout(() => { setDisplayed(current.slice(0, charIdx - 1)); setCharIdx(c => c - 1); }, 40);
+    } else if (deleting && charIdx === 0) {
+      setDeleting(false);
+      setRoleIdx(r => (r + 1) % roles.length);
+    }
+    return () => clearTimeout(timeout);
+  }, [charIdx, deleting, roleIdx]);
+
+  return (
+    <div style={{ marginTop: 6, height: 24, display: 'flex', alignItems: 'center' }}>
+      <span style={{ color: '#4cd9ff', fontSize: 16, fontWeight: 600, fontFamily: 'monospace' }}>{displayed}</span>
+      <span style={{ display: 'inline-block', width: 2, height: 18, backgroundColor: '#4cd9ff', marginLeft: 2, animation: 'blink 1s step-end infinite' }} />
+    </div>
+  );
+}
+
 export default function PortfolioPage() {
   const isMobile = useIsMobile(800);
   const [showTerminal, setShowTerminal] = useState(false);
@@ -702,35 +948,204 @@ export default function PortfolioPage() {
   }, []);
 
   return (
-    <div style={{ backgroundColor: '#121212', color: '#4cd9ff', fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif", minHeight: '150vh', padding: 20, paddingBottom: 80 }}>
+    <div style={{ backgroundColor: '#121212', color: '#4cd9ff', fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif", minHeight: '150vh', paddingBottom: 80 }}>
       {showTerminal && <TerminalEasterEgg onClose={() => setShowTerminal(false)} />}
       {isMobile && <MobileSidebarNav />}
-      {!isMobile && (<section style={{ maxWidth: 1200, margin: '0 auto 20px auto' }}><RunnerGame /></section>)}
+      {/* ── DESKTOP: Split layout — outside main, full width ── */}
+      {!isMobile ? (
+        <div style={{ width: '100%', padding: '20px 20px 0 20px', boxSizing: 'border-box', marginBottom: 48 }}>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'minmax(360px, 400px) 1fr',
+            gap: 20,
+            alignItems: 'stretch',
+            width: '100%',
+            position: 'relative',
+          }}>
+              {/* Left — Hero info */}
+              <div style={{
+                background: 'linear-gradient(135deg, #0d1117 0%, #0f1f35 50%, #0d1117 100%)',
+                borderRadius: 20,
+                border: '1px solid rgba(76,217,255,0.2)',
+                boxShadow: '0 0 60px rgba(76,217,255,0.06)',
+                padding: '32px 28px',
+                position: 'relative',
+                overflow: 'hidden',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+              }}>
+                <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(circle, rgba(76,217,255,0.04) 1px, transparent 1px)', backgroundSize: '28px 28px', pointerEvents: 'none' }} />
+                <div style={{ position: 'relative' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 20 }}>
+                    <div style={{ position: 'relative', flexShrink: 0 }}>
+                      <div style={{ width: 90, height: 90, borderRadius: '50%', background: 'conic-gradient(from 0deg, #4cd9ff, #0070f3, #4cd9ff)', padding: 2 }}>
+                        <img src="/my-image.jpg" alt="Jai Sharma" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover', border: '3px solid #0d1117' }} />
+                      </div>
+                      <span style={{ position: 'absolute', bottom: 3, right: 3, width: 14, height: 14, borderRadius: '50%', backgroundColor: '#3fb950', border: '2px solid #0d1117', boxShadow: '0 0 8px #3fb950' }} />
+                    </div>
+                    <div>
+                      <div style={{ fontFamily: 'monospace', fontSize: 11, color: 'rgba(76,217,255,0.6)', marginBottom: 4 }}>jai@danklofan:~$</div>
+                      <h1 style={{ margin: 0, fontSize: '2rem', fontWeight: 800, color: '#e6edf3', letterSpacing: '-0.02em', lineHeight: 1.1 }}>Jai Sharma</h1>
+                      <DesktopTypewriter />
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 18 }}>
+                    {['Himalayas, India', 'Unilog Corp', 'GCP Certified'].map(tag => (
+                      <span key={tag} style={{ fontSize: 11, fontFamily: 'monospace', color: '#8b949e', backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 6, padding: '3px 10px' }}>{tag}</span>
+                    ))}
+                  </div>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 24 }}>
+                    {[
+                      { label: 'LinkedIn', href: 'https://www.linkedin.com/in/jaisharma2512/', icon: '/icons/linkedin.svg' },
+                      { label: 'GitHub', href: 'https://github.com/Jaisharma2512', icon: '/icons/github.svg' },
+                      { label: 'Fiverr', href: 'https://www.fiverr.com/sellers/jaisharma2512/edit', icon: '/icons/fiverr.svg' },
+                    ].map(link => (
+                      <a key={link.label} href={link.href} target="_blank" rel="noopener noreferrer" style={{
+                        display: 'inline-flex', alignItems: 'center', gap: 6,
+                        padding: '6px 14px', borderRadius: 8,
+                        backgroundColor: 'rgba(76,217,255,0.08)',
+                        border: '1px solid rgba(76,217,255,0.2)',
+                        color: '#4cd9ff', fontSize: 13, fontWeight: 600, textDecoration: 'none',
+                        transition: 'background 0.2s',
+                      }}
+                        onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(76,217,255,0.18)'; e.currentTarget.style.borderColor = '#4cd9ff'; }}
+                        onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'rgba(76,217,255,0.08)'; e.currentTarget.style.borderColor = 'rgba(76,217,255,0.2)'; }}
+                      >
+                        <img src={link.icon} alt={link.label} style={{ width: 14, height: 14 }} />
+                        {link.label}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+                {/* Currently working on */}
+                <div style={{ marginBottom: 20, padding: '10px 14px', backgroundColor: 'rgba(63,185,80,0.06)', border: '1px solid rgba(63,185,80,0.2)', borderRadius: 10, display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#3fb950', display: 'inline-block', flexShrink: 0, boxShadow: '0 0 8px #3fb950', animation: 'pulse 2s infinite' }} />
+                  <div>
+                    <div style={{ fontSize: 11, color: '#8b949e', letterSpacing: '0.06em', fontFamily: 'monospace' }}>CURRENTLY WORKING AT</div>
+                    <div style={{ fontSize: 13, color: '#e6edf3', fontWeight: 600, marginTop: 1 }}>Unilog Corp · CloudOps Engineer</div>
+                  </div>
+                </div>
 
-      <main style={{ maxWidth: 900, margin: '0 auto' }}>
+                {/* Stats with sparkline bars */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
+                  {[
+                    { value: '2+', label: 'Years Exp', pct: 40, color: '#4cd9ff' },
+                    { value: '3', label: 'Companies', pct: 60, color: '#a78bfa' },
+                    { value: '3+', label: 'Live Projects', pct: 75, color: '#3fb950' },
+                    { value: '99.97%', label: 'Uptime SLA', pct: 100, color: '#4cd9ff' },
+                  ].map(stat => (
+                    <div key={stat.label} style={{ backgroundColor: 'rgba(13,17,23,0.7)', borderRadius: 10, border: '1px solid rgba(76,217,255,0.12)', padding: '12px 14px' }}>
+                      <div style={{ fontSize: 20, fontWeight: 800, color: stat.color, fontFamily: 'monospace' }}>{stat.value}</div>
+                      <div style={{ fontSize: 11, color: '#8b949e', marginTop: 2, marginBottom: 8 }}>{stat.label}</div>
+                      <div style={{ backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 3, height: 3, overflow: 'hidden' }}>
+                        <div style={{ height: '100%', width: `${stat.pct}%`, backgroundColor: stat.color, borderRadius: 3, opacity: 0.7 }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
 
-        {/* ── HERO SECTION ── */}
-        <FadeInSection id="summary" title="">
-          <HeroSection />
-        </FadeInSection>
+              {/* Vertical glow divider */}
+              <div style={{
+                position: 'absolute', left: 'calc(50% - 1px)',
+                top: 20, bottom: 20, width: 1,
+                background: 'linear-gradient(180deg, transparent, rgba(76,217,255,0.4), rgba(76,217,255,0.6), rgba(76,217,255,0.4), transparent)',
+                pointerEvents: 'none', zIndex: 2,
+              }} />
 
-        <FadeInSection id="work-experience" title="Professional Experience"><WorkExperience /></FadeInSection>
-        <FadeInSection id="skills" title="Technical Skills"><Skills /></FadeInSection>
-        <FadeInSection id="projects" title="Projects"><Projects /></FadeInSection>
-        <FadeInSection id="infra" title="Infrastructure Overview"><InfraStats /></FadeInSection>
-        <FadeInSection id="uptime" title="Service Status"><UptimeWidget /></FadeInSection>
-        <FadeInSection id="deployments" title="Deployments"><DeploymentBadge /></FadeInSection>
-        <FadeInSection id="education" title="Education">
-          <div style={{ backgroundColor: '#1f2e44', borderRadius: 14, boxShadow: '0 8px 20px rgba(0,123,255,0.4)', padding: 24, marginBottom: 32, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 24, transition: 'background 0.3s ease' }} onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#29508d')} onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#1f2e44')}>
-            <img src="/graphic-era-logo.jpg" alt="Graphic Era Logo" style={{ width: 64, height: 64, objectFit: 'contain', borderRadius: 10, boxShadow: '0 0 14px rgba(76,217,255,0.7)', flexShrink: 0, transition: 'transform 0.3s ease' }} onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.15)')} onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')} />
-            <div style={{ flex: 1, minWidth: 280, color: '#b0cef9' }}>
-              <h3 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 700, marginBottom: 6, color: '#61dfff', textShadow: '0 0 10px rgba(76,217,255,0.7)' }}>Graphic Era Deemed to be University</h3>
-              <p style={{ fontSize: 16, lineHeight: 1.6, margin: 0 }}>Bachelor of Technology in Computer Science Engineering<br /><span style={{ fontWeight: 600, color: '#e4f4ff' }}>Graduated July 2023</span></p>
-              <p style={{ color: '#9abff2', marginTop: 10 }}><span style={{ display: 'inline-block', padding: '3px 10px', borderRadius: 999, backgroundColor: 'rgba(76,217,255,0.12)', color: '#61dfff', fontSize: 13, fontWeight: 600 }}>Recipient of IEEE Certificate of Appreciation</span></p>
+              {/* Right — Runner game */}
+              <div style={{
+                borderRadius: 20, overflow: 'hidden',
+                border: '1px solid rgba(76,217,255,0.15)',
+                backgroundColor: '#0d1117',
+                display: 'flex', flexDirection: 'column',
+                minHeight: 460,
+              }}>
+                <RunnerGame hideIntro={true} />
+              </div>
             </div>
           </div>
-        </FadeInSection>
-        <FadeInSection id="certificates" title="Certifications"><Certificates /></FadeInSection>
+      ) : (
+        /* Mobile — just hero section */
+        <div style={{ padding: '20px 20px 0 20px', boxSizing: 'border-box' }}>
+          <FadeInSection id="summary" title="">
+            <HeroSection />
+          </FadeInSection>
+        </div>
+      )}
+
+      <main style={{ maxWidth: '100%', margin: '0 auto', width: '100%', boxSizing: 'border-box', padding: '0 20px' }}>
+        {/* ── DESKTOP: Bento grid layout ── */}
+        {!isMobile ? (
+          <div style={{ width: '100%' }}>
+
+            {/* Row 1: Experience full width */}
+            <BentoSection id="work-experience" title="Professional Experience">
+              <WorkExperience />
+            </BentoSection>
+
+            {/* Row 2: Skills + Projects side by side */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginBottom: 48, alignItems: 'stretch' }}>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <BentoSectionInner id="skills" title="Technical Skills" stretch>
+                  <Skills />
+                </BentoSectionInner>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <BentoSectionInner id="projects" title="Projects" stretch>
+                  <Projects />
+                </BentoSectionInner>
+              </div>
+            </div>
+
+            {/* Row 3: Infra stats full width */}
+            <BentoSection id="infra" title="Infrastructure Overview">
+              <InfraStats />
+            </BentoSection>
+
+            {/* Row 4: Uptime + Deployments side by side */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginBottom: 48, alignItems: 'stretch' }}>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <BentoSectionInner id="uptime" title="Service Status" stretch>
+                  <UptimeWidget />
+                </BentoSectionInner>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <BentoSectionInner id="deployments" title="Deployments" stretch>
+                  <DeploymentBadge />
+                </BentoSectionInner>
+              </div>
+            </div>
+
+            {/* Row 5: Education + Certs side by side */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginBottom: 48, alignItems: 'stretch' }}>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <BentoSectionInner id="education" title="Education" stretch>
+                  <EducationCard />
+                </BentoSectionInner>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <BentoSectionInner id="certificates" title="Certifications" stretch>
+                  <Certificates />
+                </BentoSectionInner>
+              </div>
+            </div>
+
+          </div>
+        ) : (
+          /* Mobile: stacked layout */
+          <div>
+            <FadeInSection id="work-experience" title="Professional Experience"><WorkExperience /></FadeInSection>
+            <FadeInSection id="skills" title="Technical Skills"><Skills /></FadeInSection>
+            <FadeInSection id="projects" title="Projects"><Projects /></FadeInSection>
+            <FadeInSection id="infra" title="Infrastructure Overview"><InfraStats /></FadeInSection>
+            <FadeInSection id="uptime" title="Service Status"><UptimeWidget /></FadeInSection>
+            <FadeInSection id="deployments" title="Deployments"><DeploymentBadge /></FadeInSection>
+            <FadeInSection id="education" title="Education"><EducationCard /></FadeInSection>
+            <FadeInSection id="certificates" title="Certifications"><Certificates /></FadeInSection>
+          </div>
+        )}
       </main>
 
       {/* Floating terminal button — always visible on mobile */}

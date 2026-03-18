@@ -28,7 +28,7 @@ const s = {
   },
   label: { display: 'block', fontSize: 12, color: C.muted, marginBottom: 6, letterSpacing: '0.04em', textTransform: 'uppercase' },
   btn: (variant = 'primary') => ({
-    padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: 13,
+    padding: '8px 18px', borderRadius: 8, cursor: 'pointer', fontSize: 13,
     fontWeight: 600, transition: 'all 0.2s',
     backgroundColor: variant === 'primary' ? C.accent : variant === 'danger' ? C.danger : variant === 'success' ? C.success : C.surface,
     color: variant === 'primary' ? '#0d1117' : variant === 'ghost' ? C.muted : '#fff',

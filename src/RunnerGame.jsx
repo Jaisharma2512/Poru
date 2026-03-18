@@ -47,20 +47,57 @@ const phaseFiveOrbs  = [{ x: 600, key: 'certificates' }]; // was phase 4
 
 function getCanvasSize() {
   const isMobile = window.innerWidth <= 800;
-  const maxWidth = isMobile ? window.innerWidth * 0.97 : 900;
-  const minWidth = 320;
-  const width = Math.max(Math.min(window.innerWidth * 0.97, maxWidth), minWidth);
-  const height = isMobile
-    ? Math.max(window.innerHeight * 0.46, (width * 9) / 16, 230)
-    : Math.max((width * 9) / 16, 400);
-  return { width, height };
+  if (isMobile) {
+    const width = Math.max(window.innerWidth * 0.97, 320);
+    return {
+      width: Math.round(width),
+      height: Math.round(Math.max(window.innerHeight * 0.46, (width * 9) / 16, 230)),
+    };
+  }
+  // Desktop: fill the right panel which is viewport minus ~440px left card minus gaps
+  const width = Math.max(window.innerWidth - 480, 500);
+  const height = Math.max((width * 9) / 16, 460);
+  return { width: Math.round(width), height: Math.round(height) };
 }
 
 const GRAVITY = 0.7;
 const JUMP_VELOCITY = -15;
 const RUN_SPEED = 5;
 
-function RunnerGame() {
+
+// ── MATRIX RAIN ───────────────────────────────────────────────────────────────
+function MatrixRain() {
+  const canvasRef = useRef(null);
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+    const cols = Math.floor(canvas.width / 16);
+    const drops = Array(cols).fill(1);
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*()_+-=[]{}|;:,.<>?/\~`アイウエオカキクケコサシスセソタチツテトナニヌネノ';
+
+    function draw() {
+      ctx.fillStyle = 'rgba(13,17,23,0.05)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#4cd9ff';
+      ctx.font = '14px monospace';
+      for (let i = 0; i < drops.length; i++) {
+        const char = chars[Math.floor(Math.random() * chars.length)];
+        ctx.fillStyle = drops[i] * 16 < canvas.height * 0.3 ? '#4cd9ff' : 'rgba(76,217,255,0.3)';
+        ctx.fillText(char, i * 16, drops[i] * 16);
+        if (drops[i] * 16 > canvas.height && Math.random() > 0.975) drops[i] = 0;
+        drops[i]++;
+      }
+    }
+    const id = setInterval(draw, 50);
+    return () => clearInterval(id);
+  }, []);
+  return <canvas ref={canvasRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.5 }} />;
+}
+
+function RunnerGame({ hideIntro = false }) {
   const [gameStarted, setGameStarted] = useState(false);
   const [paused, setPaused] = useState(false);
   const [assetsLoaded, setAssetsLoaded] = useState(false);
@@ -504,7 +541,7 @@ function RunnerGame() {
     >
       {renderTopBar()}
 
-      {!gameStarted && (
+      {!gameStarted && !hideIntro && (
         <div className={styles.introCloud}>
           <p style={{ margin: 0, fontWeight: 'bold', fontSize: 20 }}>
             Hi I am Jai a Devops Engineer from Himalayas and this is my cloud journey
@@ -512,6 +549,24 @@ function RunnerGame() {
           <p style={{ marginTop: 12, fontSize: 16, color: '#666' }}>
             Press <strong>F</strong> to start the game or tap the game area
           </p>
+        </div>
+      )}
+      {!gameStarted && hideIntro && (
+        <div style={{ position: 'absolute', inset: 0, zIndex: 10, borderRadius: 8, overflow: 'hidden' }}>
+          <MatrixRain />
+          <div style={{
+            position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center',
+            background: 'rgba(13,17,23,0.65)',
+          }}>
+            <div style={{ fontFamily: 'monospace', color: '#4cd9ff', fontSize: 13, marginBottom: 10, opacity: 0.8 }}>
+              $ ./start_journey.sh
+            </div>
+            <div style={{ color: '#e6edf3', fontSize: 16, fontWeight: 700, marginBottom: 8 }}>
+              Press <kbd style={{ backgroundColor: 'rgba(76,217,255,0.15)', border: '1px solid rgba(76,217,255,0.4)', borderRadius: 4, padding: '2px 8px', color: '#4cd9ff', fontFamily: 'monospace' }}>F</kbd> to start
+            </div>
+            <div style={{ color: '#8b949e', fontSize: 12, fontFamily: 'monospace' }}>or click / tap</div>
+          </div>
         </div>
       )}
 
@@ -526,7 +581,7 @@ function RunnerGame() {
           boxShadow: '0 0 28px #2af',
           display: 'block',
           width: '100%',
-          maxWidth: canvasSize.width,
+          maxWidth: '100%',
         }}
       />
 
