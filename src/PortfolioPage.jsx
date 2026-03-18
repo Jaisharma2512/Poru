@@ -43,6 +43,7 @@ function FadeInSection({ id, title, children, fullWidth = false }) {
           maxWidth: useFullWidth ? '100%' : 900,
           margin: '0 auto 20px auto',
           padding: useFullWidth ? '0 20px 6px 20px' : '0 0 6px 0',
+          transition: 'color 0.3s ease',
         }}>{title}</h2>
       )}
       <div style={{
@@ -417,7 +418,7 @@ function DeploymentBadge() {
 }
 
 // ── MOBILE SIDEBAR NAV ────────────────────────────────────────────────────────
-function MobileSidebarNav() {
+function MobileSidebarNav({ darkMode, toggleTheme }) {
   const [open, setOpen] = useState(false);
   const navItems = [
     { label: 'Summary',      icon: '👤', id: 'summary' },
@@ -444,11 +445,18 @@ function MobileSidebarNav() {
             <div style={{ color: '#4cd9ff', fontSize: 11, fontWeight: 600, letterSpacing: '0.06em' }}>DEVOPS · CLOUDOPS · SRE</div>
           </div>
         </div>
-        <button onClick={() => setOpen(o => !o)} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 5, padding: 8, borderRadius: 6 }} aria-label="Toggle navigation">
-          <span style={{ display: 'block', width: 22, height: 2.5, backgroundColor: '#e6a817', borderRadius: 2, transition: 'transform 0.3s ease', transform: open ? 'translateY(7.5px) rotate(45deg)' : 'none' }} />
-          <span style={{ display: 'block', width: 22, height: 2.5, backgroundColor: '#e6a817', borderRadius: 2, transition: 'opacity 0.3s ease', opacity: open ? 0 : 1 }} />
-          <span style={{ display: 'block', width: 22, height: 2.5, backgroundColor: '#e6a817', borderRadius: 2, transition: 'transform 0.3s ease', transform: open ? 'translateY(-7.5px) rotate(-45deg)' : 'none' }} />
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <button onClick={toggleTheme} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 8, borderRadius: 6, fontSize: 18, transition: 'transform 0.3s ease', lineHeight: 1 }}
+            onMouseEnter={e => e.currentTarget.style.transform = 'rotate(20deg)'}
+            onMouseLeave={e => e.currentTarget.style.transform = 'rotate(0)'}
+            aria-label="Toggle theme"
+          >{darkMode ? '☀️' : '🌙'}</button>
+          <button onClick={() => setOpen(o => !o)} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 5, padding: 8, borderRadius: 6 }} aria-label="Toggle navigation">
+            <span style={{ display: 'block', width: 22, height: 2.5, backgroundColor: '#e6a817', borderRadius: 2, transition: 'transform 0.3s ease', transform: open ? 'translateY(7.5px) rotate(45deg)' : 'none' }} />
+            <span style={{ display: 'block', width: 22, height: 2.5, backgroundColor: '#e6a817', borderRadius: 2, transition: 'opacity 0.3s ease', opacity: open ? 0 : 1 }} />
+            <span style={{ display: 'block', width: 22, height: 2.5, backgroundColor: '#e6a817', borderRadius: 2, transition: 'transform 0.3s ease', transform: open ? 'translateY(-7.5px) rotate(-45deg)' : 'none' }} />
+          </button>
+        </div>
       </div>
       <div style={{ height: 56 }} />
       <div style={{ position: 'fixed', top: 56, left: 0, right: 0, zIndex: 999, backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', backgroundColor: 'rgba(13,17,23,0.75)', borderBottom: open ? '1px solid rgba(76,217,255,0.2)' : 'none', maxHeight: open ? '480px' : '0px', overflow: 'hidden', transition: 'max-height 0.4s cubic-bezier(0.4,0,0.2,1)' }}>
@@ -502,7 +510,7 @@ function WorkExperience() {
   if (isMobile) return (
     <>
       {items.map(item => (
-        <div key={item.id} style={{ backgroundColor: '#1f2e44', borderRadius: 14, boxShadow: '0 8px 20px rgba(0,123,255,0.4)', padding: 24, marginBottom: 32, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 24, transition: 'background 0.3s ease' }} onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#29508d')} onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#1f2e44')}>
+        <div key={item.id} style={{ backgroundColor: '#1f2e44', borderRadius: 14, boxShadow: '0 8px 20px rgba(0,123,255,0.4)', padding: 24, marginBottom: 32, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 24, transition: 'background 0.3s ease, box-shadow 0.3s ease' }} onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#29508d')} onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#1f2e44')}>
           {item.logo_url && (<img src={item.logo_url} alt={`${item.company} Logo`} style={{ width: 64, height: 64, objectFit: 'contain', borderRadius: 10, boxShadow: '0 0 16px rgba(76,217,255,0.7)', flexShrink: 0, transition: 'transform 0.3s ease', cursor: 'pointer' }} onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.15)')} onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')} />)}
           <div style={{ flex: 1, minWidth: 280 }}>
             <h3 style={{ margin: 0, color: '#61dfff', fontWeight: 800, fontSize: '1.5rem', marginBottom: 10, textShadow: '0 0 6px rgba(76,217,255,0.7)' }}>{item.company}</h3>
@@ -935,6 +943,8 @@ function DesktopTypewriter() {
 export default function PortfolioPage() {
   const isMobile = useIsMobile(800);
   const [showTerminal, setShowTerminal] = useState(false);
+  const [darkMode, setDarkMode] = useState(true);
+  const toggleTheme = () => setDarkMode(d => !d);
 
   // Keyboard shortcut: backtick
   useEffect(() => {
@@ -948,9 +958,9 @@ export default function PortfolioPage() {
   }, []);
 
   return (
-    <div style={{ backgroundColor: '#121212', color: '#4cd9ff', fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif", minHeight: '150vh', paddingBottom: 80 }}>
+    <div style={{ backgroundColor: darkMode ? '#121212' : '#f0f4f8', color: darkMode ? '#4cd9ff' : '#0070f3', fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif", minHeight: '150vh', paddingBottom: 80, transition: 'background-color 0.3s ease, color 0.3s ease' }}>
       {showTerminal && <TerminalEasterEgg onClose={() => setShowTerminal(false)} />}
-      {isMobile && <MobileSidebarNav />}
+      {isMobile && <MobileSidebarNav darkMode={darkMode} toggleTheme={toggleTheme} />}
       {/* ── DESKTOP: Split layout — outside main, full width ── */}
       {!isMobile ? (
         <div style={{ width: '100%', padding: '20px 20px 0 20px', boxSizing: 'border-box', marginBottom: 48 }}>
@@ -976,6 +986,27 @@ export default function PortfolioPage() {
                 justifyContent: 'space-between',
               }}>
                 <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(circle, rgba(76,217,255,0.04) 1px, transparent 1px)', backgroundSize: '28px 28px', pointerEvents: 'none' }} />
+                {/* Theme toggle — top right of hero card */}
+                <button onClick={toggleTheme} style={{
+                  position: 'absolute', top: 16, right: 16, zIndex: 10,
+                  background: darkMode ? 'rgba(13,17,23,0.6)' : 'rgba(255,255,255,0.8)',
+                  border: `1px solid ${darkMode ? 'rgba(76,217,255,0.3)' : 'rgba(0,112,243,0.3)'}`,
+                  borderRadius: 20, padding: '5px 12px', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  backdropFilter: 'blur(8px)',
+                  transition: 'all 0.3s ease',
+                }}
+                  onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.08)'}
+                  onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+                  aria-label="Toggle theme"
+                >
+                  <span style={{ fontSize: 14, display: 'inline-block', transition: 'transform 0.4s ease', transform: darkMode ? 'rotate(0deg)' : 'rotate(180deg)' }}>
+                    {darkMode ? '☀️' : '🌙'}
+                  </span>
+                  <span style={{ fontSize: 11, fontFamily: 'monospace', fontWeight: 700, color: darkMode ? '#4cd9ff' : '#0070f3', letterSpacing: '0.04em' }}>
+                    {darkMode ? 'light' : 'dark'}
+                  </span>
+                </button>
                 <div style={{ position: 'relative' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 20 }}>
                     <div style={{ position: 'relative', flexShrink: 0 }}>
