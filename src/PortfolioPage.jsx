@@ -683,7 +683,7 @@ function HeroSection() {
 
   const stats = [
     { value: '2+', label: 'Years Experience' },
-    { value: '3', label: 'Companies' },
+    { value: '2', label: 'Companies' },
     { value: '3+', label: 'Live Projects' },
     { value: '99.97%', label: 'Uptime SLA' },
   ];
@@ -1062,7 +1062,7 @@ export default function PortfolioPage() {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
                   {[
                     { value: '2+', label: 'Years Exp', pct: 40, color: '#4cd9ff' },
-                    { value: '3', label: 'Companies', pct: 60, color: '#a78bfa' },
+                    { value: '2', label: 'Companies', pct: 60, color: '#a78bfa' },
                     { value: '3+', label: 'Live Projects', pct: 75, color: '#3fb950' },
                     { value: '99.97%', label: 'Uptime SLA', pct: 100, color: '#4cd9ff' },
                   ].map(stat => (
