@@ -69,6 +69,18 @@ function useIsMobile(breakpoint = 800) {
   return isMobile;
 }
 
+// ── DYNAMIC COMPANY COUNT ─────────────────────────────────────────────────────
+function useCompanyCount() {
+  const [count, setCount] = useState(null);
+  useEffect(() => {
+    supabase
+      .from('work_experience')
+      .select('id', { count: 'exact', head: true })
+      .then(({ count: c }) => setCount(c ?? 0));
+  }, []);
+  return count;
+}
+
 // ── 1. TERMINAL EASTER EGG ────────────────────────────────────────────────────
 const TERMINAL_COMMANDS = {
   help: `Available commands:
@@ -278,7 +290,6 @@ function KubectlPods({ skills }) {
     return d < 60 ? `${d}s` : d < 3600 ? `${Math.floor(d / 60)}m` : `${Math.floor(d / 3600)}h`;
   }
 
-  // Mobile: 2 columns (name + status). Desktop: full 5 columns.
   const cols = isMobileView ? '1fr 70px' : '2fr 80px 60px 60px 60px';
 
   return (
@@ -306,7 +317,7 @@ function KubectlPods({ skills }) {
               onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(76,217,255,0.08)'; e.currentTarget.style.boxShadow = 'inset 3px 0 0 #4cd9ff'; }}
               onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.boxShadow = 'none'; }}
             >
-              <span style={{ color: '#e6edf3', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: isMobileView ? 12 : 12 }}>{podName}</span>
+              <span style={{ color: '#e6edf3', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{podName}</span>
               <span style={{ color: stateColor, fontWeight: 700, fontSize: 11 }}>{state}</span>
               {!isMobileView && <>
                 <span style={{ color: '#8b949e' }}>1/1</span>
@@ -506,7 +517,6 @@ function WorkExperience() {
   useEffect(() => { supabase.from('work_experience').select('*').order('sort_order').then(({ data }) => { setItems(data || []); setLoading(false); }); }, []);
   if (loading) return <><Skeleton /><Skeleton /></>;
 
-  // Mobile: keep existing card layout
   if (isMobile) return (
     <>
       {items.map(item => (
@@ -522,17 +532,13 @@ function WorkExperience() {
     </>
   );
 
-  // Desktop: vertical timeline
   return (
     <div style={{ position: 'relative', paddingLeft: 32 }}>
-      {/* Vertical line */}
       <div style={{ position: 'absolute', left: 10, top: 8, bottom: 8, width: 2, backgroundColor: 'rgba(76,217,255,0.15)', borderRadius: 2 }} />
-
       {items.map((item, idx) => {
         const isCurrent = idx === 0;
         return (
           <div key={item.id} style={{ position: 'relative', marginBottom: idx < items.length - 1 ? 48 : 0 }}>
-            {/* Timeline dot */}
             <div style={{
               position: 'absolute', left: -26, top: 20,
               width: 14, height: 14, borderRadius: '50%',
@@ -541,20 +547,16 @@ function WorkExperience() {
               boxShadow: isCurrent ? '0 0 12px rgba(76,217,255,0.6)' : 'none',
               zIndex: 1,
             }} />
-
-            {/* Card */}
             <div style={{
               backgroundColor: '#0d1117',
               border: `1px solid ${isCurrent ? 'rgba(76,217,255,0.3)' : 'rgba(255,255,255,0.06)'}`,
-              borderRadius: 16,
-              padding: '24px 28px',
+              borderRadius: 16, padding: '24px 28px',
               transition: 'border-color 0.3s ease, background 0.3s ease',
             }}
               onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#0f1f35'; e.currentTarget.style.borderColor = 'rgba(76,217,255,0.4)'; }}
               onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#0d1117'; e.currentTarget.style.borderColor = isCurrent ? 'rgba(76,217,255,0.3)' : 'rgba(255,255,255,0.06)'; }}
             >
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 20, marginBottom: 16 }}>
-                {/* Logo */}
                 {item.logo_url && (
                   <img src={item.logo_url} alt={item.company} style={{
                     width: 52, height: 52, objectFit: 'contain', borderRadius: 10,
@@ -581,8 +583,6 @@ function WorkExperience() {
                   </p>
                 </div>
               </div>
-
-              {/* Bullets */}
               <ul style={{ margin: 0, paddingLeft: 20, color: '#8b949e', fontSize: 14, lineHeight: 1.8 }}>
                 {(item.bullets || []).map((b, i) => (
                   <li key={i} style={{ marginBottom: 4, color: i === 0 ? '#c9d1d9' : '#8b949e' }}>{b}</li>
@@ -595,7 +595,6 @@ function WorkExperience() {
     </div>
   );
 }
-
 
 function Projects() {
   const [items, setItems] = useState([]);
@@ -620,11 +619,9 @@ function Projects() {
           onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(76,217,255,0.4)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
           onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(76,217,255,0.12)'; e.currentTarget.style.transform = 'translateY(0)'; }}
         >
-          {/* Colored top accent bar */}
           <div style={{ height: 3, background: accentColors[idx % accentColors.length] }} />
           <div style={{ padding: '16px 20px' }}>
             <h3 style={{ color: '#e6edf3', fontWeight: 800, fontSize: '1.2rem', marginBottom: 10, letterSpacing: '-0.01em' }}>{item.title}</h3>
-            {/* Tech stack chips */}
             {item.tech_stack && (
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 }}>
                 {item.tech_stack.split('·').map(t => (
@@ -655,10 +652,8 @@ function Skills() {
   return <KubectlPods skills={skills} />;
 }
 
-// ── MAIN ──────────────────────────────────────────────────────────────────────
-
-// ── HERO SECTION ─────────────────────────────────────────────────────────────
-function HeroSection() {
+// ── HERO SECTION (mobile) ─────────────────────────────────────────────────────
+function HeroSection({ companyCount }) {
   const roles = ['DevOps Engineer', 'CloudOps Engineer', 'SRE', 'Infrastructure Architect', 'CI/CD Specialist'];
   const [roleIdx, setRoleIdx] = useState(0);
   const [displayed, setDisplayed] = useState('');
@@ -683,7 +678,7 @@ function HeroSection() {
 
   const stats = [
     { value: '2+', label: 'Years Experience' },
-    { value: '2', label: 'Companies' },
+    { value: companyCount !== null ? String(companyCount) : '…', label: 'Companies' },
     { value: '3+', label: 'Live Projects' },
     { value: '99.97%', label: 'Uptime SLA' },
   ];
@@ -696,30 +691,19 @@ function HeroSection() {
       boxShadow: '0 0 60px rgba(76,217,255,0.06)',
       position: 'relative', overflow: 'hidden',
     }}>
-      {/* Background grid effect */}
       <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(circle, rgba(76,217,255,0.04) 1px, transparent 1px)', backgroundSize: '28px 28px', pointerEvents: 'none' }} />
-
       <div style={{ position: 'relative', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 28 }}>
-        {/* Photo */}
         <div style={{ position: 'relative', flexShrink: 0 }}>
           <div style={{ width: 110, height: 110, borderRadius: '50%', background: 'conic-gradient(from 0deg, #4cd9ff, #0070f3, #4cd9ff)', padding: 2 }}>
             <img src="/my-image.jpg" alt="Jai Sharma" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover', border: '3px solid #0d1117' }} />
           </div>
           <span style={{ position: 'absolute', bottom: 4, right: 4, width: 16, height: 16, borderRadius: '50%', backgroundColor: '#3fb950', border: '2px solid #0d1117', boxShadow: '0 0 8px #3fb950' }} />
         </div>
-
-        {/* Text */}
         <div style={{ flex: 1, minWidth: 220 }}>
-          <div style={{ fontFamily: 'monospace', fontSize: 12, color: 'rgba(76,217,255,0.6)', marginBottom: 6, letterSpacing: '0.1em' }}>
-            jai@danklofan:~$
-          </div>
-          <h1 style={{ margin: 0, fontSize: 'clamp(1.6rem, 5vw, 2.4rem)', fontWeight: 800, color: '#e6edf3', letterSpacing: '-0.02em', lineHeight: 1.1 }}>
-            Jai Sharma
-          </h1>
+          <div style={{ fontFamily: 'monospace', fontSize: 12, color: 'rgba(76,217,255,0.6)', marginBottom: 6, letterSpacing: '0.1em' }}>jai@danklofan:~$</div>
+          <h1 style={{ margin: 0, fontSize: 'clamp(1.6rem, 5vw, 2.4rem)', fontWeight: 800, color: '#e6edf3', letterSpacing: '-0.02em', lineHeight: 1.1 }}>Jai Sharma</h1>
           <div style={{ marginTop: 8, height: 28, display: 'flex', alignItems: 'center', gap: 0 }}>
-            <span style={{ color: '#4cd9ff', fontSize: 'clamp(14px, 3vw, 18px)', fontWeight: 600, fontFamily: 'monospace' }}>
-              {displayed}
-            </span>
+            <span style={{ color: '#4cd9ff', fontSize: 'clamp(14px, 3vw, 18px)', fontWeight: 600, fontFamily: 'monospace' }}>{displayed}</span>
             <span style={{ display: 'inline-block', width: 2, height: 20, backgroundColor: '#4cd9ff', marginLeft: 2, animation: 'blink 1s step-end infinite' }} />
           </div>
           <div style={{ marginTop: 14, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
@@ -727,7 +711,6 @@ function HeroSection() {
               <span key={tag} style={{ fontSize: 11, fontFamily: 'monospace', color: '#8b949e', backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 6, padding: '3px 10px' }}>{tag}</span>
             ))}
           </div>
-          {/* Social links */}
           <div style={{ marginTop: 16, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
             {[
               { label: 'LinkedIn', href: 'https://www.linkedin.com/in/jaisharma2512/', icon: '/icons/linkedin.svg' },
@@ -752,8 +735,6 @@ function HeroSection() {
           </div>
         </div>
       </div>
-
-      {/* Stats row */}
       <div style={{ marginTop: 28, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: 12 }}>
         {stats.map(stat => (
           <div key={stat.label} style={{
@@ -770,7 +751,7 @@ function HeroSection() {
   );
 }
 
-// ── LUXURY CERTIFICATES ───────────────────────────────────────────────────────
+// ── CERTIFICATES ──────────────────────────────────────────────────────────────
 function Certificates() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -784,13 +765,11 @@ function Certificates() {
       {items.map(item => (
         <a key={item.id} href={item.link} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
           <div style={{
-            backgroundColor: '#0d1117',
-            border: '1px solid rgba(76,217,255,0.2)',
+            backgroundColor: '#0d1117', border: '1px solid rgba(76,217,255,0.2)',
             borderRadius: 16, padding: '24px 20px',
             display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16,
             cursor: 'pointer', transition: 'all 0.3s ease',
-            boxShadow: '0 0 0 rgba(76,217,255,0)',
-            textAlign: 'center',
+            boxShadow: '0 0 0 rgba(76,217,255,0)', textAlign: 'center',
           }}
             onMouseEnter={e => { e.currentTarget.style.borderColor = '#4cd9ff'; e.currentTarget.style.boxShadow = '0 0 28px rgba(76,217,255,0.2)'; e.currentTarget.style.transform = 'translateY(-4px)'; }}
             onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(76,217,255,0.2)'; e.currentTarget.style.boxShadow = '0 0 0 rgba(76,217,255,0)'; e.currentTarget.style.transform = 'translateY(0)'; }}
@@ -805,8 +784,7 @@ function Certificates() {
               <div style={{
                 display: 'inline-flex', alignItems: 'center', gap: 6,
                 backgroundColor: 'rgba(76,217,255,0.1)', border: '1px solid rgba(76,217,255,0.3)',
-                borderRadius: 8, padding: '6px 14px',
-                color: '#4cd9ff', fontSize: 12, fontWeight: 600,
+                borderRadius: 8, padding: '6px 14px', color: '#4cd9ff', fontSize: 12, fontWeight: 600,
               }}>
                 View Certificate →
               </div>
@@ -817,8 +795,6 @@ function Certificates() {
     </div>
   );
 }
-
-
 
 // ── BENTO SECTION HELPERS ─────────────────────────────────────────────────────
 function BentoSection({ id, title, children }) {
@@ -833,8 +809,7 @@ function BentoSection({ id, title, children }) {
       <h2 style={{
         borderBottom: '2px solid #4cd9ff', paddingBottom: 6, marginBottom: 20,
         fontSize: '1.8rem', fontWeight: 700, color: '#49c4ff',
-        textShadow: '0 0 6px rgba(76,217,255,0.7)',
-        padding: '0 0 6px 0',
+        textShadow: '0 0 6px rgba(76,217,255,0.7)', padding: '0 0 6px 0',
       }}>{title}</h2>
       <div>{children}</div>
     </section>
@@ -864,7 +839,6 @@ function BentoSectionInner({ id, title, children, stretch = false }) {
   );
 }
 
-// ── EDUCATION CARD (extracted for reuse) ─────────────────────────────────────
 function EducationCard() {
   return (
     <div style={{
@@ -908,7 +882,6 @@ function EducationCard() {
   );
 }
 
-// ── DESKTOP TYPEWRITER (used in split layout) ─────────────────────────────────
 function DesktopTypewriter() {
   const roles = ['DevOps Engineer', 'CloudOps Engineer', 'SRE', 'Infrastructure Architect', 'CI/CD Specialist'];
   const [roleIdx, setRoleIdx] = useState(0);
@@ -940,13 +913,16 @@ function DesktopTypewriter() {
   );
 }
 
+// ── MAIN ──────────────────────────────────────────────────────────────────────
 export default function PortfolioPage() {
   const isMobile = useIsMobile(800);
   const [showTerminal, setShowTerminal] = useState(false);
   const [darkMode, setDarkMode] = useState(true);
   const toggleTheme = () => setDarkMode(d => !d);
 
-  // Keyboard shortcut: backtick
+  // ── Dynamic company count from Supabase ──
+  const companyCount = useCompanyCount();
+
   useEffect(() => {
     function handleKey(e) {
       if (e.key === '`' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
@@ -957,215 +933,187 @@ export default function PortfolioPage() {
     return () => window.removeEventListener('keydown', handleKey);
   }, []);
 
+  // Desktop stats data — uses live companyCount
+  const desktopStats = [
+    { value: '2+', label: 'Years Exp', pct: 40, color: '#4cd9ff' },
+    { value: companyCount !== null ? String(companyCount) : '…', label: 'Companies', pct: Math.min((companyCount ?? 0) * 20, 100), color: '#a78bfa' },
+    { value: '3+', label: 'Live Projects', pct: 75, color: '#3fb950' },
+    { value: '99.97%', label: 'Uptime SLA', pct: 100, color: '#4cd9ff' },
+  ];
+
   return (
     <div style={{ backgroundColor: darkMode ? '#121212' : '#f0f4f8', color: darkMode ? '#4cd9ff' : '#0070f3', fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif", minHeight: '150vh', paddingBottom: 80, transition: 'background-color 0.3s ease, color 0.3s ease' }}>
       {showTerminal && <TerminalEasterEgg onClose={() => setShowTerminal(false)} />}
       {isMobile && <MobileSidebarNav darkMode={darkMode} toggleTheme={toggleTheme} />}
-      {/* ── DESKTOP: Split layout — outside main, full width ── */}
+
+      {/* ── DESKTOP: Split layout ── */}
       {!isMobile ? (
         <div style={{ width: '100%', padding: '20px 20px 0 20px', boxSizing: 'border-box', marginBottom: 48 }}>
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'minmax(360px, 400px) 1fr',
-            gap: 20,
-            alignItems: 'stretch',
-            width: '100%',
-            position: 'relative',
+            gap: 20, alignItems: 'stretch', width: '100%', position: 'relative',
           }}>
-              {/* Left — Hero info */}
-              <div style={{
-                background: 'linear-gradient(135deg, #0d1117 0%, #0f1f35 50%, #0d1117 100%)',
-                borderRadius: 20,
-                border: '1px solid rgba(76,217,255,0.2)',
-                boxShadow: '0 0 60px rgba(76,217,255,0.06)',
-                padding: '32px 28px',
-                position: 'relative',
-                overflow: 'hidden',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-              }}>
-                <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(circle, rgba(76,217,255,0.04) 1px, transparent 1px)', backgroundSize: '28px 28px', pointerEvents: 'none' }} />
-                {/* Theme toggle — top right of hero card */}
-                <button onClick={toggleTheme} style={{
-                  position: 'absolute', top: 16, right: 16, zIndex: 10,
-                  background: darkMode ? 'rgba(13,17,23,0.6)' : 'rgba(255,255,255,0.8)',
-                  border: `1px solid ${darkMode ? 'rgba(76,217,255,0.3)' : 'rgba(0,112,243,0.3)'}`,
-                  borderRadius: 20, padding: '5px 12px', cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', gap: 6,
-                  backdropFilter: 'blur(8px)',
-                  transition: 'all 0.3s ease',
-                }}
-                  onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.08)'}
-                  onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-                  aria-label="Toggle theme"
-                >
-                  <span style={{ fontSize: 14, display: 'inline-block', transition: 'transform 0.4s ease', transform: darkMode ? 'rotate(0deg)' : 'rotate(180deg)' }}>
-                    {darkMode ? '☀️' : '🌙'}
-                  </span>
-                  <span style={{ fontSize: 11, fontFamily: 'monospace', fontWeight: 700, color: darkMode ? '#4cd9ff' : '#0070f3', letterSpacing: '0.04em' }}>
-                    {darkMode ? 'light' : 'dark'}
-                  </span>
-                </button>
-                <div style={{ position: 'relative' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 20 }}>
-                    <div style={{ position: 'relative', flexShrink: 0 }}>
-                      <div style={{ width: 90, height: 90, borderRadius: '50%', background: 'conic-gradient(from 0deg, #4cd9ff, #0070f3, #4cd9ff)', padding: 2 }}>
-                        <img src="/my-image.jpg" alt="Jai Sharma" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover', border: '3px solid #0d1117' }} />
-                      </div>
-                      <span style={{ position: 'absolute', bottom: 3, right: 3, width: 14, height: 14, borderRadius: '50%', backgroundColor: '#3fb950', border: '2px solid #0d1117', boxShadow: '0 0 8px #3fb950' }} />
-                    </div>
-                    <div>
-                      <div style={{ fontFamily: 'monospace', fontSize: 11, color: 'rgba(76,217,255,0.6)', marginBottom: 4 }}>jai@danklofan:~$</div>
-                      <h1 style={{ margin: 0, fontSize: '2rem', fontWeight: 800, color: '#e6edf3', letterSpacing: '-0.02em', lineHeight: 1.1 }}>Jai Sharma</h1>
-                      <DesktopTypewriter />
-                    </div>
-                  </div>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 18 }}>
-                    {['Himalayas, India', 'Unilog Corp', 'GCP Certified'].map(tag => (
-                      <span key={tag} style={{ fontSize: 11, fontFamily: 'monospace', color: '#8b949e', backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 6, padding: '3px 10px' }}>{tag}</span>
-                    ))}
-                  </div>
-                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 24 }}>
-                    {[
-                      { label: 'LinkedIn', href: 'https://www.linkedin.com/in/jaisharma2512/', icon: '/icons/linkedin.svg' },
-                      { label: 'GitHub', href: 'https://github.com/Jaisharma2512', icon: '/icons/github.svg' },
-                      { label: 'Fiverr', href: 'https://www.fiverr.com/sellers/jaisharma2512/edit', icon: '/icons/fiverr.svg' },
-                    ].map(link => (
-                      <a key={link.label} href={link.href} target="_blank" rel="noopener noreferrer" style={{
-                        display: 'inline-flex', alignItems: 'center', gap: 6,
-                        padding: '6px 14px', borderRadius: 8,
-                        backgroundColor: 'rgba(76,217,255,0.08)',
-                        border: '1px solid rgba(76,217,255,0.2)',
-                        color: '#4cd9ff', fontSize: 13, fontWeight: 600, textDecoration: 'none',
-                        transition: 'background 0.2s',
-                      }}
-                        onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(76,217,255,0.18)'; e.currentTarget.style.borderColor = '#4cd9ff'; }}
-                        onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'rgba(76,217,255,0.08)'; e.currentTarget.style.borderColor = 'rgba(76,217,255,0.2)'; }}
-                      >
-                        <img src={link.icon} alt={link.label} style={{ width: 14, height: 14 }} />
-                        {link.label}
-                      </a>
-                    ))}
-                  </div>
-                </div>
-                {/* Currently working on */}
-                <div style={{ marginBottom: 20, padding: '10px 14px', backgroundColor: 'rgba(63,185,80,0.06)', border: '1px solid rgba(63,185,80,0.2)', borderRadius: 10, display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#3fb950', display: 'inline-block', flexShrink: 0, boxShadow: '0 0 8px #3fb950', animation: 'pulse 2s infinite' }} />
-                  <div>
-                    <div style={{ fontSize: 11, color: '#8b949e', letterSpacing: '0.06em', fontFamily: 'monospace' }}>CURRENTLY WORKING AT</div>
-                    <div style={{ fontSize: 13, color: '#e6edf3', fontWeight: 600, marginTop: 1 }}>Unilog Corp · CloudOps Engineer</div>
-                  </div>
-                </div>
+            {/* Left — Hero info */}
+            <div style={{
+              background: 'linear-gradient(135deg, #0d1117 0%, #0f1f35 50%, #0d1117 100%)',
+              borderRadius: 20, border: '1px solid rgba(76,217,255,0.2)',
+              boxShadow: '0 0 60px rgba(76,217,255,0.06)',
+              padding: '32px 28px', position: 'relative', overflow: 'hidden',
+              display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+            }}>
+              <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(circle, rgba(76,217,255,0.04) 1px, transparent 1px)', backgroundSize: '28px 28px', pointerEvents: 'none' }} />
+              {/* Theme toggle */}
+              <button onClick={toggleTheme} style={{
+                position: 'absolute', top: 16, right: 16, zIndex: 10,
+                background: darkMode ? 'rgba(13,17,23,0.6)' : 'rgba(255,255,255,0.8)',
+                border: `1px solid ${darkMode ? 'rgba(76,217,255,0.3)' : 'rgba(0,112,243,0.3)'}`,
+                borderRadius: 20, padding: '5px 12px', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: 6,
+                backdropFilter: 'blur(8px)', transition: 'all 0.3s ease',
+              }}
+                onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.08)'}
+                onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+                aria-label="Toggle theme"
+              >
+                <span style={{ fontSize: 14, display: 'inline-block', transition: 'transform 0.4s ease', transform: darkMode ? 'rotate(0deg)' : 'rotate(180deg)' }}>
+                  {darkMode ? '☀️' : '🌙'}
+                </span>
+                <span style={{ fontSize: 11, fontFamily: 'monospace', fontWeight: 700, color: darkMode ? '#4cd9ff' : '#0070f3', letterSpacing: '0.04em' }}>
+                  {darkMode ? 'light' : 'dark'}
+                </span>
+              </button>
 
-                {/* Stats with sparkline bars */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
-                  {[
-                    { value: '2+', label: 'Years Exp', pct: 40, color: '#4cd9ff' },
-                    { value: '2', label: 'Companies', pct: 60, color: '#a78bfa' },
-                    { value: '3+', label: 'Live Projects', pct: 75, color: '#3fb950' },
-                    { value: '99.97%', label: 'Uptime SLA', pct: 100, color: '#4cd9ff' },
-                  ].map(stat => (
-                    <div key={stat.label} style={{ backgroundColor: 'rgba(13,17,23,0.7)', borderRadius: 10, border: '1px solid rgba(76,217,255,0.12)', padding: '12px 14px' }}>
-                      <div style={{ fontSize: 20, fontWeight: 800, color: stat.color, fontFamily: 'monospace' }}>{stat.value}</div>
-                      <div style={{ fontSize: 11, color: '#8b949e', marginTop: 2, marginBottom: 8 }}>{stat.label}</div>
-                      <div style={{ backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 3, height: 3, overflow: 'hidden' }}>
-                        <div style={{ height: '100%', width: `${stat.pct}%`, backgroundColor: stat.color, borderRadius: 3, opacity: 0.7 }} />
-                      </div>
+              <div style={{ position: 'relative' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 20 }}>
+                  <div style={{ position: 'relative', flexShrink: 0 }}>
+                    <div style={{ width: 90, height: 90, borderRadius: '50%', background: 'conic-gradient(from 0deg, #4cd9ff, #0070f3, #4cd9ff)', padding: 2 }}>
+                      <img src="/my-image.jpg" alt="Jai Sharma" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover', border: '3px solid #0d1117' }} />
                     </div>
+                    <span style={{ position: 'absolute', bottom: 3, right: 3, width: 14, height: 14, borderRadius: '50%', backgroundColor: '#3fb950', border: '2px solid #0d1117', boxShadow: '0 0 8px #3fb950' }} />
+                  </div>
+                  <div>
+                    <div style={{ fontFamily: 'monospace', fontSize: 11, color: 'rgba(76,217,255,0.6)', marginBottom: 4 }}>jai@danklofan:~$</div>
+                    <h1 style={{ margin: 0, fontSize: '2rem', fontWeight: 800, color: '#e6edf3', letterSpacing: '-0.02em', lineHeight: 1.1 }}>Jai Sharma</h1>
+                    <DesktopTypewriter />
+                  </div>
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 18 }}>
+                  {['Himalayas, India', 'Unilog Corp', 'GCP Certified'].map(tag => (
+                    <span key={tag} style={{ fontSize: 11, fontFamily: 'monospace', color: '#8b949e', backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 6, padding: '3px 10px' }}>{tag}</span>
+                  ))}
+                </div>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 24 }}>
+                  {[
+                    { label: 'LinkedIn', href: 'https://www.linkedin.com/in/jaisharma2512/', icon: '/icons/linkedin.svg' },
+                    { label: 'GitHub', href: 'https://github.com/Jaisharma2512', icon: '/icons/github.svg' },
+                    { label: 'Fiverr', href: 'https://www.fiverr.com/sellers/jaisharma2512/edit', icon: '/icons/fiverr.svg' },
+                  ].map(link => (
+                    <a key={link.label} href={link.href} target="_blank" rel="noopener noreferrer" style={{
+                      display: 'inline-flex', alignItems: 'center', gap: 6,
+                      padding: '6px 14px', borderRadius: 8,
+                      backgroundColor: 'rgba(76,217,255,0.08)',
+                      border: '1px solid rgba(76,217,255,0.2)',
+                      color: '#4cd9ff', fontSize: 13, fontWeight: 600, textDecoration: 'none',
+                      transition: 'background 0.2s',
+                    }}
+                      onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(76,217,255,0.18)'; e.currentTarget.style.borderColor = '#4cd9ff'; }}
+                      onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'rgba(76,217,255,0.08)'; e.currentTarget.style.borderColor = 'rgba(76,217,255,0.2)'; }}
+                    >
+                      <img src={link.icon} alt={link.label} style={{ width: 14, height: 14 }} />
+                      {link.label}
+                    </a>
                   ))}
                 </div>
               </div>
 
-              {/* Vertical glow divider */}
-              <div style={{
-                position: 'absolute', left: 'calc(50% - 1px)',
-                top: 20, bottom: 20, width: 1,
-                background: 'linear-gradient(180deg, transparent, rgba(76,217,255,0.4), rgba(76,217,255,0.6), rgba(76,217,255,0.4), transparent)',
-                pointerEvents: 'none', zIndex: 2,
-              }} />
+              {/* Currently working at */}
+              <div style={{ marginBottom: 20, padding: '10px 14px', backgroundColor: 'rgba(63,185,80,0.06)', border: '1px solid rgba(63,185,80,0.2)', borderRadius: 10, display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#3fb950', display: 'inline-block', flexShrink: 0, boxShadow: '0 0 8px #3fb950', animation: 'pulse 2s infinite' }} />
+                <div>
+                  <div style={{ fontSize: 11, color: '#8b949e', letterSpacing: '0.06em', fontFamily: 'monospace' }}>CURRENTLY WORKING AT</div>
+                  <div style={{ fontSize: 13, color: '#e6edf3', fontWeight: 600, marginTop: 1 }}>Unilog Corp · CloudOps Engineer</div>
+                </div>
+              </div>
 
-              {/* Right — Runner game */}
-              <div style={{
-                borderRadius: 20, overflow: 'hidden',
-                border: '1px solid rgba(76,217,255,0.15)',
-                backgroundColor: '#0d1117',
-                display: 'flex', flexDirection: 'column',
-                minHeight: 460,
-              }}>
-                <RunnerGame hideIntro={true} />
+              {/* Stats grid — dynamic company count */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
+                {desktopStats.map(stat => (
+                  <div key={stat.label} style={{ backgroundColor: 'rgba(13,17,23,0.7)', borderRadius: 10, border: '1px solid rgba(76,217,255,0.12)', padding: '12px 14px' }}>
+                    <div style={{ fontSize: 20, fontWeight: 800, color: stat.color, fontFamily: 'monospace' }}>{stat.value}</div>
+                    <div style={{ fontSize: 11, color: '#8b949e', marginTop: 2, marginBottom: 8 }}>{stat.label}</div>
+                    <div style={{ backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 3, height: 3, overflow: 'hidden' }}>
+                      <div style={{ height: '100%', width: `${stat.pct}%`, backgroundColor: stat.color, borderRadius: 3, opacity: 0.7 }} />
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
+
+            {/* Vertical glow divider */}
+            <div style={{
+              position: 'absolute', left: 'calc(50% - 1px)',
+              top: 20, bottom: 20, width: 1,
+              background: 'linear-gradient(180deg, transparent, rgba(76,217,255,0.4), rgba(76,217,255,0.6), rgba(76,217,255,0.4), transparent)',
+              pointerEvents: 'none', zIndex: 2,
+            }} />
+
+            {/* Right — Runner game */}
+            <div style={{
+              borderRadius: 20, overflow: 'hidden',
+              border: '1px solid rgba(76,217,255,0.15)',
+              backgroundColor: '#0d1117',
+              display: 'flex', flexDirection: 'column',
+              minHeight: 460,
+            }}>
+              <RunnerGame hideIntro={true} />
+            </div>
           </div>
+        </div>
       ) : (
-        /* Mobile — just hero section */
+        /* Mobile — hero section */
         <div style={{ padding: '20px 20px 0 20px', boxSizing: 'border-box' }}>
           <FadeInSection id="summary" title="">
-            <HeroSection />
+            <HeroSection companyCount={companyCount} />
           </FadeInSection>
         </div>
       )}
 
       <main style={{ maxWidth: '100%', margin: '0 auto', width: '100%', boxSizing: 'border-box', padding: '0 20px' }}>
-        {/* ── DESKTOP: Bento grid layout ── */}
         {!isMobile ? (
           <div style={{ width: '100%' }}>
-
-            {/* Row 1: Experience full width */}
             <BentoSection id="work-experience" title="Professional Experience">
               <WorkExperience />
             </BentoSection>
-
-            {/* Row 2: Skills + Projects side by side */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginBottom: 48, alignItems: 'stretch' }}>
               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <BentoSectionInner id="skills" title="Technical Skills" stretch>
-                  <Skills />
-                </BentoSectionInner>
+                <BentoSectionInner id="skills" title="Technical Skills" stretch><Skills /></BentoSectionInner>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <BentoSectionInner id="projects" title="Projects" stretch>
-                  <Projects />
-                </BentoSectionInner>
+                <BentoSectionInner id="projects" title="Projects" stretch><Projects /></BentoSectionInner>
               </div>
             </div>
-
-            {/* Row 3: Infra stats full width */}
             <BentoSection id="infra" title="Infrastructure Overview">
               <InfraStats />
             </BentoSection>
-
-            {/* Row 4: Uptime + Deployments side by side */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginBottom: 48, alignItems: 'stretch' }}>
               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <BentoSectionInner id="uptime" title="Service Status" stretch>
-                  <UptimeWidget />
-                </BentoSectionInner>
+                <BentoSectionInner id="uptime" title="Service Status" stretch><UptimeWidget /></BentoSectionInner>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <BentoSectionInner id="deployments" title="Deployments" stretch>
-                  <DeploymentBadge />
-                </BentoSectionInner>
+                <BentoSectionInner id="deployments" title="Deployments" stretch><DeploymentBadge /></BentoSectionInner>
               </div>
             </div>
-
-            {/* Row 5: Education + Certs side by side */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginBottom: 48, alignItems: 'stretch' }}>
               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <BentoSectionInner id="education" title="Education" stretch>
-                  <EducationCard />
-                </BentoSectionInner>
+                <BentoSectionInner id="education" title="Education" stretch><EducationCard /></BentoSectionInner>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <BentoSectionInner id="certificates" title="Certifications" stretch>
-                  <Certificates />
-                </BentoSectionInner>
+                <BentoSectionInner id="certificates" title="Certifications" stretch><Certificates /></BentoSectionInner>
               </div>
             </div>
-
           </div>
         ) : (
-          /* Mobile: stacked layout */
           <div>
             <FadeInSection id="work-experience" title="Professional Experience"><WorkExperience /></FadeInSection>
             <FadeInSection id="skills" title="Technical Skills"><Skills /></FadeInSection>
@@ -1179,7 +1127,7 @@ export default function PortfolioPage() {
         )}
       </main>
 
-      {/* Floating terminal button — always visible on mobile */}
+      {/* Floating terminal button */}
       {isMobile && (
         <button
           onClick={() => setShowTerminal(t => !t)}
