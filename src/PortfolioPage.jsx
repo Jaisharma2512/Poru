@@ -144,7 +144,6 @@ function TerminalEasterEgg({ onClose }) {
     const trimmed = cmd.trim().toLowerCase();
     if (trimmed === 'clear') { setLines([{ type: 'system', text: 'Terminal cleared.' }]); return; }
     if (trimmed === 'exit') { onClose(); return; }
-
     const newLines = [...lines, { type: 'input', text: `jai@danklofan:~$ ${cmd}` }];
     const handler = TERMINAL_COMMANDS[trimmed];
     if (handler) {
@@ -177,11 +176,7 @@ function TerminalEasterEgg({ onClose }) {
         border: '1px solid rgba(76,217,255,0.3)', borderRadius: 12,
         boxShadow: '0 0 40px rgba(76,217,255,0.15)', overflow: 'hidden', fontFamily: 'monospace',
       }}>
-        <div style={{
-          backgroundColor: '#161b22', padding: '10px 16px',
-          display: 'flex', alignItems: 'center', gap: 8,
-          borderBottom: '1px solid rgba(76,217,255,0.15)',
-        }}>
+        <div style={{ backgroundColor: '#161b22', padding: '10px 16px', display: 'flex', alignItems: 'center', gap: 8, borderBottom: '1px solid rgba(76,217,255,0.15)' }}>
           <span style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: '#f85149', display: 'inline-block' }} />
           <span style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: '#e6a817', display: 'inline-block' }} />
           <span style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: '#3fb950', display: 'inline-block' }} />
@@ -189,20 +184,110 @@ function TerminalEasterEgg({ onClose }) {
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#8b949e', cursor: 'pointer', fontSize: 16, padding: 0 }}>✕</button>
         </div>
         <div style={{ padding: 16, height: 340, overflowY: 'auto', fontSize: 13, lineHeight: 1.75 }}>
-          {lines.map((l, i) => (
-            <div key={i} style={{ color: colors[l.type] || '#e6edf3', whiteSpace: 'pre' }}>{l.text}</div>
-          ))}
+          {lines.map((l, i) => (<div key={i} style={{ color: colors[l.type] || '#e6edf3', whiteSpace: 'pre' }}>{l.text}</div>))}
           <div ref={bottomRef} />
         </div>
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 8, padding: '10px 16px',
-          borderTop: '1px solid rgba(76,217,255,0.1)', backgroundColor: '#0d1117',
-        }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 16px', borderTop: '1px solid rgba(76,217,255,0.1)', backgroundColor: '#0d1117' }}>
           <span style={{ color: '#4cd9ff', fontSize: 13, whiteSpace: 'nowrap' }}>jai@danklofan:~$</span>
           <input ref={inputRef} value={input} onChange={e => setInput(e.target.value)} onKeyDown={handleKey}
             style={{ flex: 1, background: 'none', border: 'none', outline: 'none', color: '#e6edf3', fontSize: 13, fontFamily: 'monospace', caretColor: '#4cd9ff' }}
             autoComplete="off" spellCheck={false} />
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ── DESKTOP NAV (fixed top bar) ───────────────────────────────────────────────
+function DesktopNav({ darkMode, toggleTheme, onTerminal }) {
+  const navItems = [
+    { label: 'Summary',      id: 'summary' },
+    { label: 'Experience',   id: 'work-experience' },
+    { label: 'Education',    id: 'education' },
+    { label: 'Skills',       id: 'skills' },
+    { label: 'Projects',     id: 'projects' },
+    { label: 'Certificates', id: 'certificates' },
+    { label: 'Status',       id: 'uptime' },
+    { label: 'Admin',        id: 'admin', href: '/admin' },
+  ];
+
+  function scrollTo(id) {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  return (
+    <div style={{
+      position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1000,
+      height: 52,
+      backgroundColor: 'rgba(13,17,23,0.9)',
+      backdropFilter: 'blur(12px)',
+      WebkitBackdropFilter: 'blur(12px)',
+      borderBottom: '1px solid rgba(76,217,255,0.15)',
+      display: 'flex', alignItems: 'center',
+      padding: '0 24px', gap: 4,
+      boxShadow: '0 2px 20px rgba(0,0,0,0.4)',
+    }}>
+      {/* Logo */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginRight: 20, flexShrink: 0 }}>
+        <img src="/my-image.jpg" alt="Jai" style={{ width: 30, height: 30, borderRadius: '50%', objectFit: 'cover', border: '1.5px solid #4cd9ff' }} />
+        <span style={{ color: '#e6edf3', fontWeight: 800, fontSize: 14, whiteSpace: 'nowrap' }}>Jai Sharma</span>
+      </div>
+
+      {/* Nav items */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1, overflowX: 'auto', scrollbarWidth: 'none' }}>
+        {navItems.map(item => (
+          <button key={item.id}
+            onClick={() => item.href ? (window.location.href = item.href) : scrollTo(item.id)}
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              padding: '6px 12px', borderRadius: 6,
+              color: item.id === 'admin' ? '#4cd9ff' : '#8b949e',
+              fontSize: 13, fontWeight: item.id === 'admin' ? 700 : 500,
+              whiteSpace: 'nowrap', transition: 'color 0.2s, background 0.2s',
+              fontFamily: "'Segoe UI', sans-serif",
+            }}
+            onMouseEnter={e => { e.currentTarget.style.color = '#e6edf3'; e.currentTarget.style.backgroundColor = 'rgba(76,217,255,0.08)'; }}
+            onMouseLeave={e => { e.currentTarget.style.color = item.id === 'admin' ? '#4cd9ff' : '#8b949e'; e.currentTarget.style.backgroundColor = 'transparent'; }}
+          >
+            {item.label}
+            {item.id === 'admin' && (
+              <span style={{ marginLeft: 6, fontSize: 10, backgroundColor: 'rgba(76,217,255,0.15)', borderRadius: 4, padding: '1px 6px' }}>CMS</span>
+            )}
+          </button>
+        ))}
+      </div>
+
+      {/* Right — terminal + theme */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+        <button onClick={onTerminal} style={{
+          background: 'none', border: '1px solid rgba(76,217,255,0.3)',
+          borderRadius: 6, color: '#4cd9ff', fontSize: 12,
+          padding: '5px 12px', cursor: 'pointer', fontFamily: 'monospace',
+          transition: 'all 0.2s',
+        }}
+          onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(76,217,255,0.1)'; e.currentTarget.style.borderColor = '#4cd9ff'; }}
+          onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.borderColor = 'rgba(76,217,255,0.3)'; }}
+        >&gt;_ terminal</button>
+
+        <button onClick={toggleTheme} style={{
+          background: darkMode ? 'rgba(13,17,23,0.6)' : 'rgba(255,255,255,0.8)',
+          border: `1px solid ${darkMode ? 'rgba(76,217,255,0.3)' : 'rgba(0,112,243,0.3)'}`,
+          borderRadius: 20, padding: '5px 12px', cursor: 'pointer',
+          display: 'flex', alignItems: 'center', gap: 6,
+          transition: 'all 0.3s ease',
+        }}
+          onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.05)'}
+          onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+          aria-label="Toggle theme"
+        >
+          <span style={{ fontSize: 13, display: 'inline-block', transition: 'transform 0.4s ease', transform: darkMode ? 'rotate(0deg)' : 'rotate(180deg)' }}>
+            {darkMode ? '☀️' : '🌙'}
+          </span>
+          <span style={{ fontSize: 11, fontFamily: 'monospace', fontWeight: 700, color: darkMode ? '#4cd9ff' : '#0070f3', letterSpacing: '0.04em' }}>
+            {darkMode ? 'light' : 'dark'}
+          </span>
+        </button>
       </div>
     </div>
   );
@@ -300,8 +385,7 @@ function KubectlPods({ skills }) {
         <style>{`@keyframes scan { 0%{transform:translateX(-100%)} 100%{transform:translateX(100%)} }`}</style>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: cols, padding: '8px 16px', color: '#8b949e', fontSize: 11, borderBottom: '1px solid rgba(255,255,255,0.05)', gap: 8 }}>
-        <span>NAME</span>
-        <span>STATUS</span>
+        <span>NAME</span><span>STATUS</span>
         {!isMobileView && <><span>READY</span><span>RESTARTS</span><span>AGE</span></>}
       </div>
       <div style={{ maxHeight: 360, overflowY: 'auto' }}>
@@ -520,7 +604,7 @@ function WorkExperience() {
   if (isMobile) return (
     <>
       {items.map(item => (
-        <div key={item.id} style={{ backgroundColor: '#1f2e44', borderRadius: 14, boxShadow: '0 8px 20px rgba(0,123,255,0.4)', padding: 24, marginBottom: 32, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 24, transition: 'background 0.3s ease, box-shadow 0.3s ease' }} onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#29508d')} onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#1f2e44')}>
+        <div key={item.id} style={{ backgroundColor: '#1f2e44', borderRadius: 14, boxShadow: '0 8px 20px rgba(0,123,255,0.4)', padding: 24, marginBottom: 32, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 24, transition: 'background 0.3s ease' }} onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#29508d')} onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#1f2e44')}>
           {item.logo_url && (<img src={item.logo_url} alt={`${item.company} Logo`} style={{ width: 64, height: 64, objectFit: 'contain', borderRadius: 10, boxShadow: '0 0 16px rgba(76,217,255,0.7)', flexShrink: 0, transition: 'transform 0.3s ease', cursor: 'pointer' }} onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.15)')} onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')} />)}
           <div style={{ flex: 1, minWidth: 280 }}>
             <h3 style={{ margin: 0, color: '#61dfff', fontWeight: 800, fontSize: '1.5rem', marginBottom: 10, textShadow: '0 0 6px rgba(76,217,255,0.7)' }}>{item.company}</h3>
@@ -539,54 +623,23 @@ function WorkExperience() {
         const isCurrent = idx === 0;
         return (
           <div key={item.id} style={{ position: 'relative', marginBottom: idx < items.length - 1 ? 48 : 0 }}>
-            <div style={{
-              position: 'absolute', left: -26, top: 20,
-              width: 14, height: 14, borderRadius: '50%',
-              backgroundColor: isCurrent ? '#4cd9ff' : '#2a3f5f',
-              border: `2px solid ${isCurrent ? '#4cd9ff' : '#30363d'}`,
-              boxShadow: isCurrent ? '0 0 12px rgba(76,217,255,0.6)' : 'none',
-              zIndex: 1,
-            }} />
-            <div style={{
-              backgroundColor: '#0d1117',
-              border: `1px solid ${isCurrent ? 'rgba(76,217,255,0.3)' : 'rgba(255,255,255,0.06)'}`,
-              borderRadius: 16, padding: '24px 28px',
-              transition: 'border-color 0.3s ease, background 0.3s ease',
-            }}
+            <div style={{ position: 'absolute', left: -26, top: 20, width: 14, height: 14, borderRadius: '50%', backgroundColor: isCurrent ? '#4cd9ff' : '#2a3f5f', border: `2px solid ${isCurrent ? '#4cd9ff' : '#30363d'}`, boxShadow: isCurrent ? '0 0 12px rgba(76,217,255,0.6)' : 'none', zIndex: 1 }} />
+            <div style={{ backgroundColor: '#0d1117', border: `1px solid ${isCurrent ? 'rgba(76,217,255,0.3)' : 'rgba(255,255,255,0.06)'}`, borderRadius: 16, padding: '24px 28px', transition: 'border-color 0.3s ease, background 0.3s ease' }}
               onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#0f1f35'; e.currentTarget.style.borderColor = 'rgba(76,217,255,0.4)'; }}
               onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#0d1117'; e.currentTarget.style.borderColor = isCurrent ? 'rgba(76,217,255,0.3)' : 'rgba(255,255,255,0.06)'; }}
             >
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 20, marginBottom: 16 }}>
-                {item.logo_url && (
-                  <img src={item.logo_url} alt={item.company} style={{
-                    width: 52, height: 52, objectFit: 'contain', borderRadius: 10,
-                    backgroundColor: '#fff', padding: 6, flexShrink: 0,
-                    boxShadow: isCurrent ? '0 0 14px rgba(76,217,255,0.4)' : 'none',
-                  }} />
-                )}
+                {item.logo_url && (<img src={item.logo_url} alt={item.company} style={{ width: 52, height: 52, objectFit: 'contain', borderRadius: 10, backgroundColor: '#fff', padding: 6, flexShrink: 0, boxShadow: isCurrent ? '0 0 14px rgba(76,217,255,0.4)' : 'none' }} />)}
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 4 }}>
-                    <h3 style={{ margin: 0, color: isCurrent ? '#61dfff' : '#e6edf3', fontWeight: 800, fontSize: '1.3rem', textShadow: isCurrent ? '0 0 6px rgba(76,217,255,0.5)' : 'none' }}>
-                      {item.company}
-                    </h3>
-                    {isCurrent && (
-                      <span style={{
-                        fontSize: 11, fontFamily: 'monospace', fontWeight: 700,
-                        backgroundColor: 'rgba(63,185,80,0.15)', color: '#3fb950',
-                        border: '1px solid rgba(63,185,80,0.3)',
-                        borderRadius: 20, padding: '2px 10px', letterSpacing: '0.06em',
-                      }}>● CURRENT</span>
-                    )}
+                    <h3 style={{ margin: 0, color: isCurrent ? '#61dfff' : '#e6edf3', fontWeight: 800, fontSize: '1.3rem', textShadow: isCurrent ? '0 0 6px rgba(76,217,255,0.5)' : 'none' }}>{item.company}</h3>
+                    {isCurrent && (<span style={{ fontSize: 11, fontFamily: 'monospace', fontWeight: 700, backgroundColor: 'rgba(63,185,80,0.15)', color: '#3fb950', border: '1px solid rgba(63,185,80,0.3)', borderRadius: 20, padding: '2px 10px', letterSpacing: '0.06em' }}>● CURRENT</span>)}
                   </div>
-                  <p style={{ margin: 0, color: '#8b949e', fontSize: 14, fontFamily: 'monospace' }}>
-                    {item.role} · {item.location}
-                  </p>
+                  <p style={{ margin: 0, color: '#8b949e', fontSize: 14, fontFamily: 'monospace' }}>{item.role} · {item.location}</p>
                 </div>
               </div>
               <ul style={{ margin: 0, paddingLeft: 20, color: '#8b949e', fontSize: 14, lineHeight: 1.8 }}>
-                {(item.bullets || []).map((b, i) => (
-                  <li key={i} style={{ marginBottom: 4, color: i === 0 ? '#c9d1d9' : '#8b949e' }}>{b}</li>
-                ))}
+                {(item.bullets || []).map((b, i) => (<li key={i} style={{ marginBottom: 4, color: i === 0 ? '#c9d1d9' : '#8b949e' }}>{b}</li>))}
               </ul>
             </div>
           </div>
@@ -611,11 +664,7 @@ function Projects() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16, height: '100%' }}>
       {items.map((item, idx) => (
-        <div key={item.id} style={{
-          backgroundColor: '#0d1117', borderRadius: 14,
-          border: '1px solid rgba(76,217,255,0.12)',
-          overflow: 'hidden', transition: 'border-color 0.3s ease, transform 0.2s ease',
-        }}
+        <div key={item.id} style={{ backgroundColor: '#0d1117', borderRadius: 14, border: '1px solid rgba(76,217,255,0.12)', overflow: 'hidden', transition: 'border-color 0.3s ease, transform 0.2s ease' }}
           onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(76,217,255,0.4)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
           onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(76,217,255,0.12)'; e.currentTarget.style.transform = 'translateY(0)'; }}
         >
@@ -625,11 +674,7 @@ function Projects() {
             {item.tech_stack && (
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 }}>
                 {item.tech_stack.split('·').map(t => (
-                  <span key={t} style={{
-                    fontSize: 11, fontFamily: 'monospace', fontWeight: 600,
-                    backgroundColor: 'rgba(76,217,255,0.08)', border: '1px solid rgba(76,217,255,0.2)',
-                    color: '#4cd9ff', borderRadius: 6, padding: '2px 8px',
-                  }}>{t.trim()}</span>
+                  <span key={t} style={{ fontSize: 11, fontFamily: 'monospace', fontWeight: 600, backgroundColor: 'rgba(76,217,255,0.08)', border: '1px solid rgba(76,217,255,0.2)', color: '#4cd9ff', borderRadius: 6, padding: '2px 8px' }}>{t.trim()}</span>
                 ))}
               </div>
             )}
@@ -684,13 +729,7 @@ function HeroSection({ companyCount }) {
   ];
 
   return (
-    <div style={{
-      background: 'linear-gradient(135deg, #0d1117 0%, #0f1f35 50%, #0d1117 100%)',
-      borderRadius: 20, padding: '40px 32px', marginBottom: 8,
-      border: '1px solid rgba(76,217,255,0.2)',
-      boxShadow: '0 0 60px rgba(76,217,255,0.06)',
-      position: 'relative', overflow: 'hidden',
-    }}>
+    <div style={{ background: 'linear-gradient(135deg, #0d1117 0%, #0f1f35 50%, #0d1117 100%)', borderRadius: 20, padding: '40px 32px', marginBottom: 8, border: '1px solid rgba(76,217,255,0.2)', boxShadow: '0 0 60px rgba(76,217,255,0.06)', position: 'relative', overflow: 'hidden' }}>
       <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(circle, rgba(76,217,255,0.04) 1px, transparent 1px)', backgroundSize: '28px 28px', pointerEvents: 'none' }} />
       <div style={{ position: 'relative', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 28 }}>
         <div style={{ position: 'relative', flexShrink: 0 }}>
@@ -702,7 +741,7 @@ function HeroSection({ companyCount }) {
         <div style={{ flex: 1, minWidth: 220 }}>
           <div style={{ fontFamily: 'monospace', fontSize: 12, color: 'rgba(76,217,255,0.6)', marginBottom: 6, letterSpacing: '0.1em' }}>jai@danklofan:~$</div>
           <h1 style={{ margin: 0, fontSize: 'clamp(1.6rem, 5vw, 2.4rem)', fontWeight: 800, color: '#e6edf3', letterSpacing: '-0.02em', lineHeight: 1.1 }}>Jai Sharma</h1>
-          <div style={{ marginTop: 8, height: 28, display: 'flex', alignItems: 'center', gap: 0 }}>
+          <div style={{ marginTop: 8, height: 28, display: 'flex', alignItems: 'center' }}>
             <span style={{ color: '#4cd9ff', fontSize: 'clamp(14px, 3vw, 18px)', fontWeight: 600, fontFamily: 'monospace' }}>{displayed}</span>
             <span style={{ display: 'inline-block', width: 2, height: 20, backgroundColor: '#4cd9ff', marginLeft: 2, animation: 'blink 1s step-end infinite' }} />
           </div>
@@ -717,14 +756,7 @@ function HeroSection({ companyCount }) {
               { label: 'GitHub', href: 'https://github.com/Jaisharma2512', icon: '/icons/github.svg' },
               { label: 'Fiverr', href: 'https://www.fiverr.com/sellers/jaisharma2512/edit', icon: '/icons/fiverr.svg' },
             ].map(link => (
-              <a key={link.label} href={link.href} target="_blank" rel="noopener noreferrer" style={{
-                display: 'inline-flex', alignItems: 'center', gap: 6,
-                padding: '6px 14px', borderRadius: 8,
-                backgroundColor: 'rgba(76,217,255,0.08)',
-                border: '1px solid rgba(76,217,255,0.2)',
-                color: '#4cd9ff', fontSize: 13, fontWeight: 600, textDecoration: 'none',
-                transition: 'background 0.2s, border-color 0.2s',
-              }}
+              <a key={link.label} href={link.href} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 14px', borderRadius: 8, backgroundColor: 'rgba(76,217,255,0.08)', border: '1px solid rgba(76,217,255,0.2)', color: '#4cd9ff', fontSize: 13, fontWeight: 600, textDecoration: 'none', transition: 'background 0.2s, border-color 0.2s' }}
                 onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(76,217,255,0.18)'; e.currentTarget.style.borderColor = '#4cd9ff'; }}
                 onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'rgba(76,217,255,0.08)'; e.currentTarget.style.borderColor = 'rgba(76,217,255,0.2)'; }}
               >
@@ -737,10 +769,7 @@ function HeroSection({ companyCount }) {
       </div>
       <div style={{ marginTop: 28, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: 12 }}>
         {stats.map(stat => (
-          <div key={stat.label} style={{
-            backgroundColor: 'rgba(13,17,23,0.7)', borderRadius: 10,
-            border: '1px solid rgba(76,217,255,0.12)', padding: '14px 16px', textAlign: 'center',
-          }}>
+          <div key={stat.label} style={{ backgroundColor: 'rgba(13,17,23,0.7)', borderRadius: 10, border: '1px solid rgba(76,217,255,0.12)', padding: '14px 16px', textAlign: 'center' }}>
             <div style={{ fontSize: 22, fontWeight: 800, color: '#4cd9ff', fontFamily: 'monospace' }}>{stat.value}</div>
             <div style={{ fontSize: 11, color: '#8b949e', marginTop: 4, letterSpacing: '0.04em' }}>{stat.label}</div>
           </div>
@@ -755,24 +784,15 @@ function HeroSection({ companyCount }) {
 function Certificates() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  useEffect(() => {
-    supabase.from('certificates').select('*').order('sort_order')
-      .then(({ data }) => { setItems(data || []); setLoading(false); });
-  }, []);
+  useEffect(() => { supabase.from('certificates').select('*').order('sort_order').then(({ data }) => { setItems(data || []); setLoading(false); }); }, []);
   if (loading) return <Skeleton />;
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16 }}>
       {items.map(item => (
         <a key={item.id} href={item.link} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
-          <div style={{
-            backgroundColor: '#0d1117', border: '1px solid rgba(76,217,255,0.2)',
-            borderRadius: 16, padding: '24px 20px',
-            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16,
-            cursor: 'pointer', transition: 'all 0.3s ease',
-            boxShadow: '0 0 0 rgba(76,217,255,0)', textAlign: 'center',
-          }}
+          <div style={{ backgroundColor: '#0d1117', border: '1px solid rgba(76,217,255,0.2)', borderRadius: 16, padding: '24px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, cursor: 'pointer', transition: 'all 0.3s ease', textAlign: 'center' }}
             onMouseEnter={e => { e.currentTarget.style.borderColor = '#4cd9ff'; e.currentTarget.style.boxShadow = '0 0 28px rgba(76,217,255,0.2)'; e.currentTarget.style.transform = 'translateY(-4px)'; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(76,217,255,0.2)'; e.currentTarget.style.boxShadow = '0 0 0 rgba(76,217,255,0)'; e.currentTarget.style.transform = 'translateY(0)'; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(76,217,255,0.2)'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'translateY(0)'; }}
           >
             {item.logo_url && (
               <div style={{ width: 72, height: 72, borderRadius: 16, backgroundColor: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 8, boxShadow: '0 0 20px rgba(76,217,255,0.25)' }}>
@@ -781,11 +801,7 @@ function Certificates() {
             )}
             <div>
               <div style={{ color: '#e6edf3', fontWeight: 700, fontSize: 15, lineHeight: 1.4, marginBottom: 10 }}>{item.title}</div>
-              <div style={{
-                display: 'inline-flex', alignItems: 'center', gap: 6,
-                backgroundColor: 'rgba(76,217,255,0.1)', border: '1px solid rgba(76,217,255,0.3)',
-                borderRadius: 8, padding: '6px 14px', color: '#4cd9ff', fontSize: 12, fontWeight: 600,
-              }}>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, backgroundColor: 'rgba(76,217,255,0.1)', border: '1px solid rgba(76,217,255,0.3)', borderRadius: 8, padding: '6px 14px', color: '#4cd9ff', fontSize: 12, fontWeight: 600 }}>
                 View Certificate →
               </div>
             </div>
@@ -800,17 +816,8 @@ function Certificates() {
 function BentoSection({ id, title, children }) {
   const [ref, visible] = useScrollFadeIn();
   return (
-    <section id={id} ref={ref} style={{
-      opacity: visible ? 1 : 0,
-      transform: visible ? 'translateY(0)' : 'translateY(20px)',
-      transition: 'opacity 0.8s ease-out, transform 0.8s ease-out',
-      marginBottom: 48, width: '100%',
-    }}>
-      <h2 style={{
-        borderBottom: '2px solid #4cd9ff', paddingBottom: 6, marginBottom: 20,
-        fontSize: '1.8rem', fontWeight: 700, color: '#49c4ff',
-        textShadow: '0 0 6px rgba(76,217,255,0.7)', padding: '0 0 6px 0',
-      }}>{title}</h2>
+    <section id={id} ref={ref} style={{ opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(20px)', transition: 'opacity 0.8s ease-out, transform 0.8s ease-out', marginBottom: 48, width: '100%' }}>
+      <h2 style={{ borderBottom: '2px solid #4cd9ff', paddingBottom: 6, marginBottom: 20, fontSize: '1.8rem', fontWeight: 700, color: '#49c4ff', textShadow: '0 0 6px rgba(76,217,255,0.7)', padding: '0 0 6px 0' }}>{title}</h2>
       <div>{children}</div>
     </section>
   );
@@ -819,62 +826,32 @@ function BentoSection({ id, title, children }) {
 function BentoSectionInner({ id, title, children, stretch = false }) {
   const [ref, visible] = useScrollFadeIn();
   return (
-    <section id={id} ref={ref} style={{
-      opacity: visible ? 1 : 0,
-      transform: visible ? 'translateY(0)' : 'translateY(20px)',
-      transition: 'opacity 0.8s ease-out, transform 0.8s ease-out',
-      display: 'flex', flexDirection: 'column',
-      flex: stretch ? 1 : 'unset',
-      height: stretch ? '100%' : 'auto',
-    }}>
-      <h2 style={{
-        borderBottom: '2px solid #4cd9ff', paddingBottom: 6, marginBottom: 20,
-        fontSize: '1.5rem', fontWeight: 700, color: '#49c4ff',
-        textShadow: '0 0 6px rgba(76,217,255,0.7)', flexShrink: 0,
-      }}>{title}</h2>
-      <div style={{ flex: stretch ? 1 : 'unset', display: 'flex', flexDirection: 'column' }}>
-        {children}
-      </div>
+    <section id={id} ref={ref} style={{ opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(20px)', transition: 'opacity 0.8s ease-out, transform 0.8s ease-out', display: 'flex', flexDirection: 'column', flex: stretch ? 1 : 'unset', height: stretch ? '100%' : 'auto' }}>
+      <h2 style={{ borderBottom: '2px solid #4cd9ff', paddingBottom: 6, marginBottom: 20, fontSize: '1.5rem', fontWeight: 700, color: '#49c4ff', textShadow: '0 0 6px rgba(76,217,255,0.7)', flexShrink: 0 }}>{title}</h2>
+      <div style={{ flex: stretch ? 1 : 'unset', display: 'flex', flexDirection: 'column' }}>{children}</div>
     </section>
   );
 }
 
 function EducationCard() {
   return (
-    <div style={{
-      backgroundColor: '#0d1117', borderRadius: 16,
-      border: '1px solid rgba(76,217,255,0.2)',
-      padding: 24, height: '100%', boxSizing: 'border-box',
-      transition: 'border-color 0.3s ease',
-    }}
+    <div style={{ backgroundColor: '#0d1117', borderRadius: 16, border: '1px solid rgba(76,217,255,0.2)', padding: 24, height: '100%', boxSizing: 'border-box', transition: 'border-color 0.3s ease' }}
       onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(76,217,255,0.4)'}
       onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(76,217,255,0.2)'}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
-        <img src="/graphic-era-logo.jpg" alt="Graphic Era" style={{
-          width: 56, height: 56, objectFit: 'contain', borderRadius: 10,
-          boxShadow: '0 0 14px rgba(76,217,255,0.4)', flexShrink: 0,
-          transition: 'transform 0.3s ease',
-        }}
+        <img src="/graphic-era-logo.jpg" alt="Graphic Era" style={{ width: 56, height: 56, objectFit: 'contain', borderRadius: 10, boxShadow: '0 0 14px rgba(76,217,255,0.4)', flexShrink: 0, transition: 'transform 0.3s ease' }}
           onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.1)'}
           onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
         />
         <div>
-          <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700, color: '#61dfff', textShadow: '0 0 10px rgba(76,217,255,0.5)' }}>
-            Graphic Era Deemed to be University
-          </h3>
-          <p style={{ fontSize: 14, color: '#8b949e', margin: '4px 0 0', fontFamily: 'monospace' }}>
-            B.Tech Computer Science Engineering
-          </p>
+          <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700, color: '#61dfff', textShadow: '0 0 10px rgba(76,217,255,0.5)' }}>Graphic Era Deemed to be University</h3>
+          <p style={{ fontSize: 14, color: '#8b949e', margin: '4px 0 0', fontFamily: 'monospace' }}>B.Tech Computer Science Engineering</p>
         </div>
       </div>
       <div style={{ borderTop: '1px solid rgba(76,217,255,0.1)', paddingTop: 14, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
         <span style={{ color: '#e4f4ff', fontWeight: 600, fontSize: 14 }}>Graduated July 2023</span>
-        <span style={{
-          display: 'inline-block', padding: '4px 12px', borderRadius: 999,
-          backgroundColor: 'rgba(76,217,255,0.1)', color: '#61dfff',
-          fontSize: 12, fontWeight: 600, border: '1px solid rgba(76,217,255,0.2)',
-        }}>
+        <span style={{ display: 'inline-block', padding: '4px 12px', borderRadius: 999, backgroundColor: 'rgba(76,217,255,0.1)', color: '#61dfff', fontSize: 12, fontWeight: 600, border: '1px solid rgba(76,217,255,0.2)' }}>
           IEEE Certificate of Appreciation
         </span>
       </div>
@@ -919,8 +896,6 @@ export default function PortfolioPage() {
   const [showTerminal, setShowTerminal] = useState(false);
   const [darkMode, setDarkMode] = useState(true);
   const toggleTheme = () => setDarkMode(d => !d);
-
-  // ── Dynamic company count from Supabase ──
   const companyCount = useCompanyCount();
 
   useEffect(() => {
@@ -933,7 +908,6 @@ export default function PortfolioPage() {
     return () => window.removeEventListener('keydown', handleKey);
   }, []);
 
-  // Desktop stats data — uses live companyCount
   const desktopStats = [
     { value: '2+', label: 'Years Exp', pct: 40, color: '#4cd9ff' },
     { value: companyCount !== null ? String(companyCount) : '…', label: 'Companies', pct: Math.min((companyCount ?? 0) * 20, 100), color: '#a78bfa' },
@@ -944,45 +918,28 @@ export default function PortfolioPage() {
   return (
     <div style={{ backgroundColor: darkMode ? '#121212' : '#f0f4f8', color: darkMode ? '#4cd9ff' : '#0070f3', fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif", minHeight: '150vh', paddingBottom: 80, transition: 'background-color 0.3s ease, color 0.3s ease' }}>
       {showTerminal && <TerminalEasterEgg onClose={() => setShowTerminal(false)} />}
+
+      {/* ── Desktop fixed top navbar ── */}
+      {!isMobile && (
+        <DesktopNav
+          darkMode={darkMode}
+          toggleTheme={toggleTheme}
+          onTerminal={() => setShowTerminal(t => !t)}
+        />
+      )}
+      {/* Spacer under navbar so content isn't hidden */}
+      {!isMobile && <div style={{ height: 52 }} />}
+
       {isMobile && <MobileSidebarNav darkMode={darkMode} toggleTheme={toggleTheme} />}
 
       {/* ── DESKTOP: Split layout ── */}
       {!isMobile ? (
         <div style={{ width: '100%', padding: '20px 20px 0 20px', boxSizing: 'border-box', marginBottom: 48 }}>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'minmax(360px, 400px) 1fr',
-            gap: 20, alignItems: 'stretch', width: '100%', position: 'relative',
-          }}>
-            {/* Left — Hero info */}
-            <div style={{
-              background: 'linear-gradient(135deg, #0d1117 0%, #0f1f35 50%, #0d1117 100%)',
-              borderRadius: 20, border: '1px solid rgba(76,217,255,0.2)',
-              boxShadow: '0 0 60px rgba(76,217,255,0.06)',
-              padding: '32px 28px', position: 'relative', overflow: 'hidden',
-              display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
-            }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(360px, 400px) 1fr', gap: 20, alignItems: 'stretch', width: '100%', position: 'relative' }}>
+
+            {/* Left — Hero info (theme toggle removed — now in navbar) */}
+            <div style={{ background: 'linear-gradient(135deg, #0d1117 0%, #0f1f35 50%, #0d1117 100%)', borderRadius: 20, border: '1px solid rgba(76,217,255,0.2)', boxShadow: '0 0 60px rgba(76,217,255,0.06)', padding: '32px 28px', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
               <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(circle, rgba(76,217,255,0.04) 1px, transparent 1px)', backgroundSize: '28px 28px', pointerEvents: 'none' }} />
-              {/* Theme toggle */}
-              <button onClick={toggleTheme} style={{
-                position: 'absolute', top: 16, right: 16, zIndex: 10,
-                background: darkMode ? 'rgba(13,17,23,0.6)' : 'rgba(255,255,255,0.8)',
-                border: `1px solid ${darkMode ? 'rgba(76,217,255,0.3)' : 'rgba(0,112,243,0.3)'}`,
-                borderRadius: 20, padding: '5px 12px', cursor: 'pointer',
-                display: 'flex', alignItems: 'center', gap: 6,
-                backdropFilter: 'blur(8px)', transition: 'all 0.3s ease',
-              }}
-                onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.08)'}
-                onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-                aria-label="Toggle theme"
-              >
-                <span style={{ fontSize: 14, display: 'inline-block', transition: 'transform 0.4s ease', transform: darkMode ? 'rotate(0deg)' : 'rotate(180deg)' }}>
-                  {darkMode ? '☀️' : '🌙'}
-                </span>
-                <span style={{ fontSize: 11, fontFamily: 'monospace', fontWeight: 700, color: darkMode ? '#4cd9ff' : '#0070f3', letterSpacing: '0.04em' }}>
-                  {darkMode ? 'light' : 'dark'}
-                </span>
-              </button>
 
               <div style={{ position: 'relative' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 20 }}>
@@ -1009,14 +966,7 @@ export default function PortfolioPage() {
                     { label: 'GitHub', href: 'https://github.com/Jaisharma2512', icon: '/icons/github.svg' },
                     { label: 'Fiverr', href: 'https://www.fiverr.com/sellers/jaisharma2512/edit', icon: '/icons/fiverr.svg' },
                   ].map(link => (
-                    <a key={link.label} href={link.href} target="_blank" rel="noopener noreferrer" style={{
-                      display: 'inline-flex', alignItems: 'center', gap: 6,
-                      padding: '6px 14px', borderRadius: 8,
-                      backgroundColor: 'rgba(76,217,255,0.08)',
-                      border: '1px solid rgba(76,217,255,0.2)',
-                      color: '#4cd9ff', fontSize: 13, fontWeight: 600, textDecoration: 'none',
-                      transition: 'background 0.2s',
-                    }}
+                    <a key={link.label} href={link.href} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 14px', borderRadius: 8, backgroundColor: 'rgba(76,217,255,0.08)', border: '1px solid rgba(76,217,255,0.2)', color: '#4cd9ff', fontSize: 13, fontWeight: 600, textDecoration: 'none', transition: 'background 0.2s' }}
                       onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(76,217,255,0.18)'; e.currentTarget.style.borderColor = '#4cd9ff'; }}
                       onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'rgba(76,217,255,0.08)'; e.currentTarget.style.borderColor = 'rgba(76,217,255,0.2)'; }}
                     >
@@ -1029,14 +979,14 @@ export default function PortfolioPage() {
 
               {/* Currently working at */}
               <div style={{ marginBottom: 20, padding: '10px 14px', backgroundColor: 'rgba(63,185,80,0.06)', border: '1px solid rgba(63,185,80,0.2)', borderRadius: 10, display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#3fb950', display: 'inline-block', flexShrink: 0, boxShadow: '0 0 8px #3fb950', animation: 'pulse 2s infinite' }} />
+                <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#3fb950', display: 'inline-block', flexShrink: 0, boxShadow: '0 0 8px #3fb950' }} />
                 <div>
                   <div style={{ fontSize: 11, color: '#8b949e', letterSpacing: '0.06em', fontFamily: 'monospace' }}>CURRENTLY WORKING AT</div>
                   <div style={{ fontSize: 13, color: '#e6edf3', fontWeight: 600, marginTop: 1 }}>Unilog Corp · CloudOps Engineer</div>
                 </div>
               </div>
 
-              {/* Stats grid — dynamic company count */}
+              {/* Stats grid */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
                 {desktopStats.map(stat => (
                   <div key={stat.label} style={{ backgroundColor: 'rgba(13,17,23,0.7)', borderRadius: 10, border: '1px solid rgba(76,217,255,0.12)', padding: '12px 14px' }}>
@@ -1051,27 +1001,15 @@ export default function PortfolioPage() {
             </div>
 
             {/* Vertical glow divider */}
-            <div style={{
-              position: 'absolute', left: 'calc(50% - 1px)',
-              top: 20, bottom: 20, width: 1,
-              background: 'linear-gradient(180deg, transparent, rgba(76,217,255,0.4), rgba(76,217,255,0.6), rgba(76,217,255,0.4), transparent)',
-              pointerEvents: 'none', zIndex: 2,
-            }} />
+            <div style={{ position: 'absolute', left: 'calc(50% - 1px)', top: 20, bottom: 20, width: 1, background: 'linear-gradient(180deg, transparent, rgba(76,217,255,0.4), rgba(76,217,255,0.6), rgba(76,217,255,0.4), transparent)', pointerEvents: 'none', zIndex: 2 }} />
 
             {/* Right — Runner game */}
-            <div style={{
-              borderRadius: 20, overflow: 'hidden',
-              border: '1px solid rgba(76,217,255,0.15)',
-              backgroundColor: '#0d1117',
-              display: 'flex', flexDirection: 'column',
-              minHeight: 460,
-            }}>
+            <div style={{ borderRadius: 20, overflow: 'hidden', border: '1px solid rgba(76,217,255,0.15)', backgroundColor: '#0d1117', display: 'flex', flexDirection: 'column', minHeight: 460 }}>
               <RunnerGame hideIntro={true} />
             </div>
           </div>
         </div>
       ) : (
-        /* Mobile — hero section */
         <div style={{ padding: '20px 20px 0 20px', boxSizing: 'border-box' }}>
           <FadeInSection id="summary" title="">
             <HeroSection companyCount={companyCount} />
@@ -1082,9 +1020,7 @@ export default function PortfolioPage() {
       <main style={{ maxWidth: '100%', margin: '0 auto', width: '100%', boxSizing: 'border-box', padding: '0 20px' }}>
         {!isMobile ? (
           <div style={{ width: '100%' }}>
-            <BentoSection id="work-experience" title="Professional Experience">
-              <WorkExperience />
-            </BentoSection>
+            <BentoSection id="work-experience" title="Professional Experience"><WorkExperience /></BentoSection>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginBottom: 48, alignItems: 'stretch' }}>
               <div style={{ display: 'flex', flexDirection: 'column' }}>
                 <BentoSectionInner id="skills" title="Technical Skills" stretch><Skills /></BentoSectionInner>
@@ -1093,9 +1029,7 @@ export default function PortfolioPage() {
                 <BentoSectionInner id="projects" title="Projects" stretch><Projects /></BentoSectionInner>
               </div>
             </div>
-            <BentoSection id="infra" title="Infrastructure Overview">
-              <InfraStats />
-            </BentoSection>
+            <BentoSection id="infra" title="Infrastructure Overview"><InfraStats /></BentoSection>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginBottom: 48, alignItems: 'stretch' }}>
               <div style={{ display: 'flex', flexDirection: 'column' }}>
                 <BentoSectionInner id="uptime" title="Service Status" stretch><UptimeWidget /></BentoSectionInner>
@@ -1127,24 +1061,13 @@ export default function PortfolioPage() {
         )}
       </main>
 
-      {/* Floating terminal button */}
+      {/* Floating terminal button — mobile only */}
       {isMobile && (
-        <button
-          onClick={() => setShowTerminal(t => !t)}
-          style={{
-            position: 'fixed', bottom: 24, right: 20, zIndex: 1001,
-            width: 52, height: 52, borderRadius: '50%',
-            backgroundColor: '#0d1117',
-            border: '1.5px solid rgba(76,217,255,0.5)',
-            boxShadow: '0 0 18px rgba(76,217,255,0.3)',
-            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontFamily: 'monospace', fontSize: 18, color: '#4cd9ff',
-            transition: 'box-shadow 0.2s ease, border-color 0.2s ease',
-          }}
+        <button onClick={() => setShowTerminal(t => !t)}
+          style={{ position: 'fixed', bottom: 24, right: 20, zIndex: 1001, width: 52, height: 52, borderRadius: '50%', backgroundColor: '#0d1117', border: '1.5px solid rgba(76,217,255,0.5)', boxShadow: '0 0 18px rgba(76,217,255,0.3)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'monospace', fontSize: 18, color: '#4cd9ff', transition: 'box-shadow 0.2s ease, border-color 0.2s ease' }}
           onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 0 28px rgba(76,217,255,0.6)'; e.currentTarget.style.borderColor = '#4cd9ff'; }}
           onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 0 18px rgba(76,217,255,0.3)'; e.currentTarget.style.borderColor = 'rgba(76,217,255,0.5)'; }}
-          aria-label="Open terminal"
-          title="Open terminal"
+          aria-label="Open terminal" title="Open terminal"
         >
           {'>_'}
         </button>
