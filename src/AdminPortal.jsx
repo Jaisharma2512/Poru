@@ -225,7 +225,7 @@ function LoginScreen({ onLogin }) {
 
 function WorkExperienceSection({ toast }) {
   const [items, setItems] = useState([]);
-  const [editing, setEditing] = useState(null); // null = list view, 'new' or id = form view
+  const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({});
   const [loading, setLoading] = useState(false);
 
@@ -606,13 +606,258 @@ function CertificatesSection({ toast }) {
   );
 }
 
+// ─── Testimonials Section ─────────────────────────────────────────────────────
+
+const SOURCE_BADGE = {
+  linkedin: { label: 'LinkedIn', color: '#0a66c2', bg: 'rgba(10,102,194,0.15)', border: 'rgba(10,102,194,0.4)' },
+  topmate:  { label: 'Topmate', color: '#7c3aed', bg: 'rgba(124,58,237,0.15)', border: 'rgba(124,58,237,0.4)' },
+};
+
+function StarPicker({ value, onChange }) {
+  return (
+    <div style={{ marginBottom: 16 }}>
+      <label style={s.label}>Rating</label>
+      <div style={{ display: 'flex', gap: 6, marginTop: 2 }}>
+        {[1, 2, 3, 4, 5].map(n => (
+          <button
+            key={n}
+            type="button"
+            onClick={() => onChange(n)}
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer', fontSize: 22, padding: 2,
+              color: n <= value ? '#f6c90e' : '#30363d',
+              transition: 'color 0.15s, transform 0.15s',
+              transform: n <= value ? 'scale(1.15)' : 'scale(1)',
+            }}
+            title={`${n} star${n > 1 ? 's' : ''}`}
+          >★</button>
+        ))}
+        <span style={{ color: C.muted, fontSize: 13, alignSelf: 'center', marginLeft: 4 }}>{value}/5</span>
+      </div>
+    </div>
+  );
+}
+
+function SourcePicker({ value, onChange }) {
+  return (
+    <div style={{ marginBottom: 16 }}>
+      <label style={s.label}>Source Platform</label>
+      <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
+        {Object.entries(SOURCE_BADGE).map(([key, cfg]) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => onChange(key)}
+            style={{
+              padding: '8px 18px', borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600,
+              border: `2px solid ${value === key ? cfg.color : C.border}`,
+              backgroundColor: value === key ? cfg.bg : 'transparent',
+              color: value === key ? cfg.color : C.muted,
+              transition: 'all 0.2s',
+            }}
+          >
+            {cfg.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function TestimonialsSection({ toast }) {
+  const [items, setItems] = useState([]);
+  const [editing, setEditing] = useState(null);
+  const [form, setForm] = useState({});
+  const [loading, setLoading] = useState(false);
+
+  const EMPTY_FORM = {
+    name: '', role: '', company: '', avatar: '',
+    text: '', source: 'linkedin', profile_url: '',
+    date: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+    rating: 5, sort_order: 0,
+  };
+
+  useEffect(() => { fetchItems(); }, []);
+
+  async function fetchItems() {
+    const { data } = await supabase.from('testimonials').select('*').order('sort_order');
+    setItems(data || []);
+  }
+
+  function openNew() {
+    setForm({ ...EMPTY_FORM, sort_order: items.length });
+    setEditing('new');
+  }
+
+  function openEdit(item) {
+    setForm({ ...item });
+    setEditing(item.id);
+  }
+
+  async function save() {
+    if (!form.name?.trim() || !form.text?.trim()) {
+      toast('Name and review text are required.', 'error');
+      return;
+    }
+    setLoading(true);
+    if (editing === 'new') {
+      const { error } = await supabase.from('testimonials').insert([form]);
+      if (error) { toast('Error: ' + error.message, 'error'); }
+      else { toast('Testimonial added!', 'success'); }
+    } else {
+      const { error } = await supabase.from('testimonials').update(form).eq('id', editing);
+      if (error) { toast('Error: ' + error.message, 'error'); }
+      else { toast('Testimonial updated!', 'success'); }
+    }
+    setLoading(false);
+    setEditing(null);
+    fetchItems();
+  }
+
+  async function remove(id) {
+    if (!window.confirm('Delete this testimonial?')) return;
+    await supabase.from('testimonials').delete().eq('id', id);
+    toast('Deleted.', 'success');
+    fetchItems();
+  }
+
+  async function moveItem(i, dir) {
+    const updated = [...items];
+    const j = i + dir;
+    if (j < 0 || j >= updated.length) return;
+    [updated[i], updated[j]] = [updated[j], updated[i]];
+    updated.forEach((item, idx) => { item.sort_order = idx; });
+    setItems(updated);
+    await Promise.all(updated.map(item =>
+      supabase.from('testimonials').update({ sort_order: item.sort_order }).eq('id', item.id)
+    ));
+  }
+
+  // ── Form view ──
+  if (editing !== null) {
+    const cfg = SOURCE_BADGE[form.source] || SOURCE_BADGE.linkedin;
+    return (
+      <div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+          <h3 style={s.sectionTitle}>{editing === 'new' ? 'Add Testimonial' : 'Edit Testimonial'}</h3>
+          <button onClick={() => setEditing(null)} style={s.btn('ghost')}>← Back</button>
+        </div>
+
+        {/* Live mini-preview */}
+        <div style={{ ...s.card, borderColor: cfg.border, background: `linear-gradient(135deg, #0d1117, #0f1f35)`, marginBottom: 20 }}>
+          <div style={{ fontSize: 11, color: C.muted, fontFamily: 'monospace', marginBottom: 10, letterSpacing: '0.06em' }}>PREVIEW</div>
+          <div style={{ color: '#4cd9ff', fontSize: 36, lineHeight: 1, marginBottom: 6, opacity: 0.3, fontFamily: 'Georgia, serif' }}>"</div>
+          <p style={{ color: '#c9d1d9', fontSize: 14, fontStyle: 'italic', lineHeight: 1.7, margin: '0 0 14px', minHeight: 40 }}>
+            {form.text || <span style={{ color: C.muted }}>Review text will appear here…</span>}
+          </p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+            <div style={{ width: 36, height: 36, borderRadius: '50%', backgroundColor: `${cfg.color}22`, border: `2px solid ${cfg.color}55`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, color: cfg.color, flexShrink: 0 }}>
+              {(form.name || '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}
+            </div>
+            <div>
+              <div style={{ color: C.text, fontWeight: 700, fontSize: 13 }}>{form.name || 'Name'}</div>
+              <div style={{ color: C.muted, fontSize: 11, fontFamily: 'monospace' }}>{form.role || 'Role'} · {form.company || 'Company'}</div>
+            </div>
+            <span style={{ marginLeft: 'auto', fontSize: 11, fontWeight: 700, backgroundColor: cfg.bg, color: cfg.color, border: `1px solid ${cfg.border}`, borderRadius: 6, padding: '3px 8px' }}>
+              {cfg.label}
+            </span>
+          </div>
+        </div>
+
+        <div style={s.card}>
+          {/* Source */}
+          <SourcePicker value={form.source || 'linkedin'} onChange={v => setForm(f => ({ ...f, source: v }))} />
+
+          {/* Person */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <Input label="Full Name *" value={form.name || ''} onChange={v => setForm(f => ({ ...f, name: v }))} placeholder="e.g. John Doe" />
+            <Input label="Date" value={form.date || ''} onChange={v => setForm(f => ({ ...f, date: v }))} placeholder="e.g. Mar 2025" />
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <Input label="Role / Title" value={form.role || ''} onChange={v => setForm(f => ({ ...f, role: v }))} placeholder="e.g. Senior Engineer" />
+            <Input label="Company" value={form.company || ''} onChange={v => setForm(f => ({ ...f, company: v }))} placeholder="e.g. Acme Corp" />
+          </div>
+          <Input label="Profile URL" value={form.profile_url || ''} onChange={v => setForm(f => ({ ...f, profile_url: v }))} placeholder="https://linkedin.com/in/... or https://topmate.io/..." />
+          <Input label="Avatar URL (optional — leave blank for initials)" value={form.avatar || ''} onChange={v => setForm(f => ({ ...f, avatar: v }))} placeholder="https://..." />
+
+          {/* Review */}
+          <Textarea
+            label="Review Text *"
+            value={form.text || ''}
+            onChange={v => setForm(f => ({ ...f, text: v }))}
+            placeholder="Paste the testimonial / review here…"
+            rows={5}
+          />
+
+          {/* Rating */}
+          <StarPicker value={form.rating ?? 5} onChange={v => setForm(f => ({ ...f, rating: v }))} />
+
+          <div style={s.row}>
+            <button onClick={save} style={s.btn('primary')} disabled={loading}>{loading ? 'Saving…' : 'Save Testimonial'}</button>
+            <button onClick={() => setEditing(null)} style={s.btn('ghost')}>Cancel</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── List view ──
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+        <h3 style={s.sectionTitle}>Testimonials</h3>
+        <button onClick={openNew} style={s.btn('primary')}>+ Add</button>
+      </div>
+
+      {/* Helper note */}
+      <div style={{ backgroundColor: 'rgba(76,217,255,0.06)', border: '1px solid rgba(76,217,255,0.2)', borderRadius: 10, padding: '12px 16px', marginBottom: 20, fontSize: 13, color: C.muted, lineHeight: 1.6 }}>
+        💡 Copy testimonials from <strong style={{ color: C.accent }}>LinkedIn recommendations</strong> or <strong style={{ color: '#7c3aed' }}>Topmate reviews</strong> and paste them here. Set the source platform and add the profile link so visitors can verify.
+      </div>
+
+      {items.map((item, i) => {
+        const cfg = SOURCE_BADGE[item.source] || SOURCE_BADGE.linkedin;
+        const stars = '★'.repeat(item.rating ?? 5) + '☆'.repeat(5 - (item.rating ?? 5));
+        return (
+          <div key={item.id} style={{ ...s.card, display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+              {/* Initials avatar */}
+              <div style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: `${cfg.color}22`, border: `2px solid ${cfg.color}44`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, color: cfg.color, flexShrink: 0 }}>
+                {(item.name || '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                  <span style={{ fontWeight: 700, color: C.text, fontSize: 14 }}>{item.name}</span>
+                  <span style={{ fontSize: 11, fontWeight: 700, backgroundColor: cfg.bg, color: cfg.color, border: `1px solid ${cfg.border}`, borderRadius: 5, padding: '2px 7px' }}>{cfg.label}</span>
+                  <span style={{ color: '#f6c90e', fontSize: 12, letterSpacing: 1 }}>{stars}</span>
+                </div>
+                <div style={{ color: C.muted, fontSize: 12, marginTop: 2 }}>{item.role} · {item.company} · {item.date}</div>
+                <p style={{ color: '#8b949e', fontSize: 13, marginTop: 8, lineHeight: 1.6, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', margin: '6px 0 0' }}>
+                  "{item.text}"
+                </p>
+              </div>
+            </div>
+            <div style={{ ...s.row, paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+              <button onClick={() => moveItem(i, -1)} style={{ ...s.btn('ghost'), padding: '6px 12px', fontSize: 12 }}>↑</button>
+              <button onClick={() => moveItem(i, 1)} style={{ ...s.btn('ghost'), padding: '6px 12px', fontSize: 12 }}>↓</button>
+              <button onClick={() => openEdit(item)} style={{ ...s.btn('ghost'), padding: '6px 14px', fontSize: 12 }}>Edit</button>
+              <button onClick={() => remove(item.id)} style={{ ...s.btn('danger'), padding: '6px 14px', fontSize: 12 }}>Delete</button>
+            </div>
+          </div>
+        );
+      })}
+      {items.length === 0 && <p style={{ color: C.muted, fontSize: 14 }}>No testimonials yet. Click + Add to create one.</p>}
+    </div>
+  );
+}
+
 // ─── Main Admin Portal ────────────────────────────────────────────────────────
 
 const TABS = [
-  { key: 'experience', label: '💼 Experience' },
-  { key: 'projects',   label: '🚀 Projects' },
-  { key: 'skills',     label: '🛠 Skills' },
-  { key: 'certs',      label: '🏆 Certs' },
+  { key: 'experience',   label: '💼 Experience' },
+  { key: 'projects',     label: '🚀 Projects' },
+  { key: 'skills',       label: '🛠 Skills' },
+  { key: 'certs',        label: '🏆 Certs' },
+  { key: 'testimonials', label: '💬 Testimonials' },
 ];
 
 export default function AdminPortal() {
@@ -671,10 +916,11 @@ export default function AdminPortal() {
 
       {/* Content */}
       <div style={{ maxWidth: 900, margin: '24px auto', padding: '0 16px', boxSizing: 'border-box' }}>
-        {activeTab === 'experience' && <WorkExperienceSection toast={showToast} />}
-        {activeTab === 'projects'   && <ProjectsSection toast={showToast} />}
-        {activeTab === 'skills'     && <SkillsSection toast={showToast} />}
-        {activeTab === 'certs'      && <CertificatesSection toast={showToast} />}
+        {activeTab === 'experience'   && <WorkExperienceSection toast={showToast} />}
+        {activeTab === 'projects'     && <ProjectsSection toast={showToast} />}
+        {activeTab === 'skills'       && <SkillsSection toast={showToast} />}
+        {activeTab === 'certs'        && <CertificatesSection toast={showToast} />}
+        {activeTab === 'testimonials' && <TestimonialsSection toast={showToast} />}
       </div>
 
       <Toast message={toastMsg} type={toastType} />

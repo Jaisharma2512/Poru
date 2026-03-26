@@ -207,6 +207,7 @@ function DesktopNav({ darkMode, toggleTheme, onTerminal }) {
     { label: 'Skills',       id: 'skills' },
     { label: 'Projects',     id: 'projects' },
     { label: 'Certificates', id: 'certificates' },
+    { label: 'Testimonials', id: 'testimonials' },
     { label: 'Status',       id: 'uptime' },
     { label: 'Admin',        id: 'admin', href: '/admin' },
   ];
@@ -522,6 +523,7 @@ function MobileSidebarNav({ darkMode, toggleTheme }) {
     { label: 'Skills',       icon: '🛠', id: 'skills' },
     { label: 'Projects',     icon: '🚀', id: 'projects' },
     { label: 'Certificates', icon: '🏆', id: 'certificates' },
+    { label: 'Testimonials', icon: '💬', id: 'testimonials' },
     { label: 'Status',       icon: '📡', id: 'uptime' },
     { label: 'Admin',        icon: '⚙️', id: 'admin', href: '/admin' },
   ];
@@ -554,7 +556,7 @@ function MobileSidebarNav({ darkMode, toggleTheme }) {
         </div>
       </div>
       <div style={{ height: 56 }} />
-      <div style={{ position: 'fixed', top: 56, left: 0, right: 0, zIndex: 999, backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', backgroundColor: 'rgba(13,17,23,0.75)', borderBottom: open ? '1px solid rgba(76,217,255,0.2)' : 'none', maxHeight: open ? '480px' : '0px', overflow: 'hidden', transition: 'max-height 0.4s cubic-bezier(0.4,0,0.2,1)' }}>
+      <div style={{ position: 'fixed', top: 56, left: 0, right: 0, zIndex: 999, backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', backgroundColor: 'rgba(13,17,23,0.75)', borderBottom: open ? '1px solid rgba(76,217,255,0.2)' : 'none', maxHeight: open ? '520px' : '0px', overflow: 'hidden', transition: 'max-height 0.4s cubic-bezier(0.4,0,0.2,1)' }}>
         {navItems.map((item, i) => (
           <button key={item.id} onClick={() => item.href ? (window.location.href = item.href) : scrollTo(item.id)}
             style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 16, padding: '15px 20px', background: 'none', border: 'none', borderBottom: i < navItems.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none', cursor: 'pointer', color: item.id === 'admin' ? '#4cd9ff' : '#e6edf3', fontSize: 15, fontWeight: item.id === 'admin' ? 700 : 500, textAlign: 'left', fontFamily: "'Segoe UI', sans-serif", transition: 'background 0.15s ease' }}
@@ -890,6 +892,278 @@ function DesktopTypewriter() {
   );
 }
 
+// ── TESTIMONIALS ──────────────────────────────────────────────────────────────
+// Testimonials are managed via the Admin Portal → Testimonials tab.
+// This hook fetches them live from the Supabase `testimonials` table.
+function useTestimonials() {
+  const [testimonials, setTestimonials] = useState([]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    supabase
+      .from('testimonials')
+      .select('*')
+      .order('sort_order')
+      .then(({ data }) => {
+        setTestimonials(data || []);
+        setLoading(false);
+      });
+  }, []);
+  return { testimonials, loading };
+}
+
+// Source badge config
+const SOURCE_CONFIG = {
+  linkedin: {
+    label: 'LinkedIn',
+    color: '#0a66c2',
+    bg: 'rgba(10,102,194,0.12)',
+    border: 'rgba(10,102,194,0.35)',
+    icon: (
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="#0a66c2">
+        <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+      </svg>
+    ),
+  },
+  topmate: {
+    label: 'Topmate',
+    color: '#7c3aed',
+    bg: 'rgba(124,58,237,0.12)',
+    border: 'rgba(124,58,237,0.35)',
+    icon: (
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="#7c3aed">
+        <circle cx="12" cy="12" r="10" stroke="#7c3aed" strokeWidth="2" fill="none"/>
+        <path d="M8 12l3 3 5-5" stroke="#7c3aed" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    ),
+  },
+};
+
+function StarRating({ count = 5 }) {
+  return (
+    <div style={{ display: 'flex', gap: 2 }}>
+      {Array.from({ length: count }).map((_, i) => (
+        <svg key={i} width="14" height="14" viewBox="0 0 24 24" fill="#f6c90e">
+          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+        </svg>
+      ))}
+    </div>
+  );
+}
+
+function TestimonialAvatar({ name, avatar, size = 48 }) {
+  const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+  const colors = ['#4cd9ff', '#a78bfa', '#3fb950', '#e6a817', '#f85149'];
+  const colorIdx = name.charCodeAt(0) % colors.length;
+
+  if (avatar) {
+    return (
+      <img src={avatar} alt={name} style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(76,217,255,0.3)', flexShrink: 0 }} />
+    );
+  }
+  return (
+    <div style={{ width: size, height: size, borderRadius: '50%', backgroundColor: `${colors[colorIdx]}22`, border: `2px solid ${colors[colorIdx]}55`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontWeight: 700, fontSize: size * 0.33, color: colors[colorIdx], fontFamily: 'monospace', letterSpacing: '0.05em' }}>
+      {initials}
+    </div>
+  );
+}
+
+function TestimonialsCarousel() {
+  const { testimonials, loading } = useTestimonials();
+  const [active, setActive] = useState(0);
+  const [animDir, setAnimDir] = useState(null); // 'left' | 'right'
+  const [animating, setAnimating] = useState(false);
+  const autoRef = useRef();
+  const total = testimonials.length;
+
+  // Reset active index if testimonials reload and active is out of range
+  useEffect(() => {
+    if (total > 0 && active >= total) setActive(0);
+  }, [total]);
+
+  function goTo(idx, dir) {
+    if (animating || total === 0) return;
+    setAnimDir(dir);
+    setAnimating(true);
+    setTimeout(() => {
+      setActive(idx);
+      setAnimating(false);
+    }, 320);
+  }
+
+  function prev() {
+    goTo((active - 1 + total) % total, 'right');
+  }
+
+  function next() {
+    goTo((active + 1) % total, 'left');
+  }
+
+  // Auto-advance every 6s, pause on hover
+  const pauseRef = useRef(false);
+  useEffect(() => {
+    if (total === 0) return;
+    autoRef.current = setInterval(() => {
+      if (!pauseRef.current) goTo((active + 1) % total, 'left');
+    }, 6000);
+    return () => clearInterval(autoRef.current);
+  }, [active, total]);
+
+  // Loading skeleton
+  if (loading) {
+    return (
+      <div style={{ backgroundColor: '#0d1117', borderRadius: 16, border: '1px solid rgba(76,217,255,0.2)', overflow: 'hidden' }}>
+        <div style={{ backgroundColor: '#161b22', padding: '10px 16px', borderBottom: '1px solid rgba(76,217,255,0.1)' }}>
+          <span style={{ color: '#4cd9ff', fontFamily: 'monospace', fontSize: 12 }}>💬 testimonials — loading…</span>
+        </div>
+        <div style={{ padding: '28px 28px 20px', minHeight: 220, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <span style={{ color: '#8b949e', fontFamily: 'monospace', fontSize: 13 }}>Fetching testimonials…</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Empty state
+  if (total === 0) {
+    return (
+      <div style={{ backgroundColor: '#0d1117', borderRadius: 16, border: '1px solid rgba(76,217,255,0.2)', overflow: 'hidden' }}>
+        <div style={{ backgroundColor: '#161b22', padding: '10px 16px', borderBottom: '1px solid rgba(76,217,255,0.1)' }}>
+          <span style={{ color: '#4cd9ff', fontFamily: 'monospace', fontSize: 12 }}>💬 testimonials — verified reviews</span>
+        </div>
+        <div style={{ padding: '28px 28px 20px', minHeight: 220, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <span style={{ color: '#8b949e', fontFamily: 'monospace', fontSize: 13 }}>No testimonials yet.</span>
+        </div>
+      </div>
+    );
+  }
+
+  const t = testimonials[active];
+  const cfg = SOURCE_CONFIG[t.source] || SOURCE_CONFIG.linkedin;
+
+  const slideStyle = {
+    transform: animating
+      ? animDir === 'left' ? 'translateX(-32px)' : 'translateX(32px)'
+      : 'translateX(0)',
+    opacity: animating ? 0 : 1,
+    transition: 'transform 0.32s cubic-bezier(0.4,0,0.2,1), opacity 0.32s ease',
+  };
+
+  return (
+    <div
+      style={{ backgroundColor: '#0d1117', borderRadius: 16, border: '1px solid rgba(76,217,255,0.2)', overflow: 'hidden', position: 'relative' }}
+      onMouseEnter={() => { pauseRef.current = true; }}
+      onMouseLeave={() => { pauseRef.current = false; }}
+    >
+      {/* Header bar */}
+      <div style={{ backgroundColor: '#161b22', padding: '10px 16px', borderBottom: '1px solid rgba(76,217,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span style={{ color: '#4cd9ff', fontFamily: 'monospace', fontSize: 12 }}>
+          💬 testimonials — verified reviews
+        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          {/* Source legend */}
+          <div style={{ display: 'flex', gap: 8 }}>
+            {Object.entries(SOURCE_CONFIG).map(([key, cfg]) => (
+              <span key={key} style={{ fontSize: 10, fontFamily: 'monospace', fontWeight: 700, backgroundColor: cfg.bg, color: cfg.color, border: `1px solid ${cfg.border}`, borderRadius: 4, padding: '2px 7px', display: 'flex', alignItems: 'center', gap: 4 }}>
+                {cfg.icon}{cfg.label}
+              </span>
+            ))}
+          </div>
+          {/* Counter */}
+          <span style={{ color: '#8b949e', fontSize: 11, fontFamily: 'monospace' }}>{active + 1}/{total}</span>
+        </div>
+      </div>
+
+      {/* Card body */}
+      <div style={{ padding: '28px 28px 20px', minHeight: 220 }}>
+        <div style={slideStyle}>
+          {/* Quote icon */}
+          <div style={{ color: 'rgba(76,217,255,0.2)', fontSize: 52, lineHeight: 1, marginBottom: 8, fontFamily: 'Georgia, serif', marginTop: -8 }}>"</div>
+
+          {/* Text */}
+          <p style={{ color: '#c9d1d9', fontSize: 15, lineHeight: 1.75, margin: '0 0 20px 0', fontStyle: 'italic' }}>
+            {t.text}
+          </p>
+
+          {/* Footer */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+            {/* Author */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <TestimonialAvatar name={t.name} avatar={t.avatar} size={44} />
+              <div>
+                <div style={{ color: '#e6edf3', fontWeight: 700, fontSize: 14 }}>{t.name}</div>
+                <div style={{ color: '#8b949e', fontSize: 12, fontFamily: 'monospace', marginTop: 2 }}>{t.role} · {t.company}</div>
+                <div style={{ marginTop: 4 }}>
+                  <StarRating count={t.rating} />
+                </div>
+              </div>
+            </div>
+
+            {/* Source badge + date */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
+              <a
+                href={t.profile_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 5, textDecoration: 'none', backgroundColor: cfg.bg, border: `1px solid ${cfg.border}`, borderRadius: 6, padding: '5px 10px', fontSize: 12, fontWeight: 700, color: cfg.color, transition: 'opacity 0.2s' }}
+                onMouseEnter={e => e.currentTarget.style.opacity = '0.75'}
+                onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+              >
+                {cfg.icon}
+                {cfg.label} ↗
+              </a>
+              <span style={{ color: '#8b949e', fontSize: 11, fontFamily: 'monospace' }}>{t.date}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Dot indicators + nav */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 20px 16px' }}>
+        {/* Dots */}
+        <div style={{ display: 'flex', gap: 6 }}>
+          {testimonials.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => goTo(i, i > active ? 'left' : 'right')}
+              style={{ width: i === active ? 20 : 6, height: 6, borderRadius: 3, backgroundColor: i === active ? '#4cd9ff' : 'rgba(76,217,255,0.2)', border: 'none', cursor: 'pointer', padding: 0, transition: 'width 0.3s ease, background-color 0.3s ease' }}
+              aria-label={`Go to testimonial ${i + 1}`}
+            />
+          ))}
+        </div>
+
+        {/* Prev / Next */}
+        <div style={{ display: 'flex', gap: 8 }}>
+          {[
+            { label: '←', fn: prev, aria: 'Previous testimonial' },
+            { label: '→', fn: next, aria: 'Next testimonial' },
+          ].map(btn => (
+            <button
+              key={btn.label}
+              onClick={btn.fn}
+              aria-label={btn.aria}
+              style={{ background: 'none', border: '1px solid rgba(76,217,255,0.25)', borderRadius: 6, color: '#4cd9ff', fontSize: 14, width: 32, height: 28, cursor: 'pointer', fontFamily: 'monospace', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.2s, border-color 0.2s' }}
+              onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(76,217,255,0.12)'; e.currentTarget.style.borderColor = '#4cd9ff'; }}
+              onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.borderColor = 'rgba(76,217,255,0.25)'; }}
+            >
+              {btn.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Progress bar */}
+      <style>{`
+        @keyframes tmProgress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+      `}</style>
+      <div style={{ height: 2, backgroundColor: 'rgba(76,217,255,0.08)' }}>
+        <div
+          key={`${active}-${animating}`}
+          style={{ height: '100%', backgroundColor: '#4cd9ff', transformOrigin: 'left', animation: !animating ? 'tmProgress 6s linear forwards' : 'none', opacity: 0.6 }}
+        />
+      </div>
+    </div>
+  );
+}
+
 // ── MAIN ──────────────────────────────────────────────────────────────────────
 export default function PortfolioPage() {
   const isMobile = useIsMobile(800);
@@ -937,7 +1211,7 @@ export default function PortfolioPage() {
         <div style={{ width: '100%', padding: '20px 20px 0 20px', boxSizing: 'border-box', marginBottom: 48 }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'minmax(360px, 400px) 1fr', gap: 20, alignItems: 'stretch', width: '100%', position: 'relative' }}>
 
-            {/* Left — Hero info (theme toggle removed — now in navbar) */}
+            {/* Left — Hero info */}
             <div style={{ background: 'linear-gradient(135deg, #0d1117 0%, #0f1f35 50%, #0d1117 100%)', borderRadius: 20, border: '1px solid rgba(76,217,255,0.2)', boxShadow: '0 0 60px rgba(76,217,255,0.06)', padding: '32px 28px', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
               <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(circle, rgba(76,217,255,0.04) 1px, transparent 1px)', backgroundSize: '28px 28px', pointerEvents: 'none' }} />
 
@@ -1046,6 +1320,10 @@ export default function PortfolioPage() {
                 <BentoSectionInner id="certificates" title="Certifications" stretch><Certificates /></BentoSectionInner>
               </div>
             </div>
+            {/* ── TESTIMONIALS (full-width on desktop) ── */}
+            <BentoSection id="testimonials" title="Testimonials">
+              <TestimonialsCarousel />
+            </BentoSection>
           </div>
         ) : (
           <div>
@@ -1057,6 +1335,8 @@ export default function PortfolioPage() {
             <FadeInSection id="deployments" title="Deployments"><DeploymentBadge /></FadeInSection>
             <FadeInSection id="education" title="Education"><EducationCard /></FadeInSection>
             <FadeInSection id="certificates" title="Certifications"><Certificates /></FadeInSection>
+            {/* ── TESTIMONIALS (mobile) ── */}
+            <FadeInSection id="testimonials" title="Testimonials"><TestimonialsCarousel /></FadeInSection>
           </div>
         )}
       </main>
